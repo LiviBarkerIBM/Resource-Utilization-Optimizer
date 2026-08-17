@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resource Utilization Optimization Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --border: #e2e6ea;
+      --text: #1a1f27;
+      --muted: #6b7380;
+      --accent: #0f62fe;
+      --accent-light: #eaf1ff;
+      --purple: #6929c4;
+      --purple-light: #f3eeff;
+      --green: #198038;
+      --green-light: #defbe6;
+      --yellow: #b45309;
+      --yellow-light: #fef3c7;
+      --red: #a2191f;
+      --red-light: #fff1f1;
+      --header-bg: #0f1623;
+      --sidebar-w: 240px;
+      --radius: 8px;
+    }
+
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text);
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Top Nav ── */
+    .topnav {
+      background: var(--header-bg);
+      color: #fff;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topnav-logo {
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: -0.3px;
+      color: #fff;
+    }
+    .topnav-logo span { color: #78a9ff; }
+    .topnav-divider { width: 1px; height: 20px; background: #3a4250; margin: 0 4px; }
+    .topnav-title { font-size: 13px; color: #a0aab4; }
+    .topnav-spacer { flex: 1; }
+    .topnav-badge {
+      background: #1a3a6b;
+      border: 1px solid #2a5abf;
+      color: #78a9ff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 16px 0;
+    }
+    .sidebar-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 12px 16px 6px;
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text);
+      border-left: 3px solid transparent;
+      transition: background 0.1s;
+    }
+    .sidebar-item:hover { background: var(--bg); }
+    .sidebar-item.active {
+      background: var(--accent-light);
+      border-left-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .sidebar-count {
+      margin-left: auto;
+      background: var(--border);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+    .sidebar-item.active .sidebar-count {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Main content ── */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .page-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .page-header p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ── Stat row ── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .stat-value { font-size: 26px; font-weight: 700; color: var(--text); }
+    .stat-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .filter-bar label { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 2px; }
+    .filter-bar select, .filter-bar input[type="text"] {
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 5px 8px;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+    }
+    .filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
+    .filter-group { display: flex; align-items: center; gap: 6px; }
+    .filter-clear {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 600;
+      border: none;
+      background: none;
+      padding: 5px 8px;
+    }
+    .filter-clear:hover { text-decoration: underline; }
+
+    /* ── Demand table ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title { font-size: 14px; font-weight: 700; }
+    table.data-table { width: 100%; border-collapse: collapse; }
+    table.data-table th {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      text-align: left;
+      white-space: nowrap;
+    }
+    table.data-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    table.data-table tr:last-child td { border-bottom: none; }
+    table.data-table tbody tr { cursor: pointer; transition: background 0.1s; }
+    table.data-table tbody tr:hover { background: var(--bg); }
+    table.data-table tbody tr.selected { background: var(--accent-light); }
+
+    /* ── Badges / chips ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-green { background: var(--green-light); color: var(--green); }
+    .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
+    .badge-red { background: var(--red-light); color: var(--red); }
+    .badge-blue { background: var(--accent-light); color: var(--accent); }
+    .badge-purple { background: var(--purple-light); color: var(--purple); }
+    .badge-gray { background: var(--border); color: var(--muted); }
+
+    .skill-chip {
+      display: inline-block;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 11px;
+      color: var(--text);
+      margin: 2px;
+    }
+    .skill-chip.matched { background: var(--green-light); border-color: #a6f4c5; color: var(--green); }
+    .skill-chip.missing { background: var(--red-light); border-color: #fecaca; color: var(--red); }
+
+    /* ── Score bar ── */
+    .score-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .score-bar-outer {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .score-bar-inner {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    .score-num { font-size: 12px; font-weight: 700; width: 28px; text-align: right; }
+
+    /* ── Candidate panel ── */
+    .candidate-panel {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .candidate-panel.visible { display: flex; }
+
+    .candidate-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .candidate-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .candidate-card-header:hover { background: var(--bg); }
+    .rank-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .rank-1 { background: #b45309; }
+    .rank-2 { background: #57606a; }
+    .rank-3 { background: #6b4226; }
+    .candidate-name { font-size: 15px; font-weight: 700; }
+    .candidate-meta { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .candidate-score-big {
+      margin-left: auto;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .score-big-num { font-size: 28px; font-weight: 800; }
+    .score-big-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .candidate-body { padding: 16px; display: none; }
+    .candidate-body.open { display: block; }
+
+    .dim-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .dim-cell {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .dim-cell-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
+
+    .narrative-box {
+      background: var(--purple-light);
+      border-left: 4px solid var(--purple);
+      border-radius: 0 6px 6px 0;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+    .narrative-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--purple); margin-bottom: 4px; font-style: normal; }
+
+    .risks-section { margin-bottom: 12px; }
+    .risks-label { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .risk-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+    .risk-high { background: var(--red-light); border: 1px solid #fecaca; }
+    .risk-medium { background: var(--yellow-light); border: 1px solid #fde68a; }
+    .risk-low { background: var(--border); }
+    .risk-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+    .risk-high .risk-dot { background: var(--red); }
+    .risk-medium .risk-dot { background: var(--yellow); }
+    .risk-low .risk-dot { background: var(--muted); }
+    .risk-type { font-weight: 700; }
+    .risk-detail { color: var(--muted); margin-left: 4px; }
+
+    .skills-row { margin-bottom: 12px; }
+    .skills-label { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+
+    /* ── Back button ── */
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-light);
+      border: 1px solid #b0ceff;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .btn-back:hover { background: #d5e8ff; }
+
+    /* ── Views ── */
+    #view-demand { display: block; }
+    #view-candidates { display: none; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+    .empty-state svg { margin-bottom: 12px; }
+    .empty-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+
+    /* ── Tooltip / note ── */
+    .note {
+      font-size: 12px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+      .dim-grid { grid-template-columns: repeat(2, 1fr); }
+      .sidebar { display: none; }
+    }
+    @media (max-width: 600px) {
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .dim-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top Nav -->
+<nav class="topnav">
+  <span class="topnav-logo">IBM <span>Consulting</span></span>
+  <div class="topnav-divider"></div>
+  <span class="topnav-title">Resource Utilization Optimization Tool</span>
+  <div class="topnav-spacer"></div>
+  <span class="topnav-badge">DRAFT v0.1</span>
+</nav>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section-label">Navigation</div>
+    <div class="sidebar-item active" id="nav-demand" onclick="showDemand()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1zm1 3v7h10V5H3zm1 2h2v2H4V7zm4 0h4v1H8V7zm0 3h4v1H8v-1z"/></svg>
+      Open Roles
+      <span class="sidebar-count" id="sidebar-role-count">0</span>
+    </div>
+
+    <div class="sidebar-section-label" style="margin-top:8px;">Filters</div>
+    <div style="padding: 6px 12px;">
+      <div style="margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Band</label>
+        <select id="sf-band" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
+          <option value="">All Bands</option>
+          <option value="6">Band 6</option>
+          <option value="7">Band 7</option>
+          <option value="8">Band 8</option>
+          <option value="9">Band 9</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">JRS</label>
+        <select id="sf-jrs" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
+          <option value="">All JRS</option>
+          <option>Cloud Solution Architect</option>
+          <option>Data Engineer</option>
+          <option>AI/ML Specialist</option>
+          <option>Application Developer</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Min Match Score</label>
+        <select id="sf-score" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
+          <option value="0">Any Score</option>
+          <option value="50">50+</option>
+          <option value="60">60+</option>
+          <option value="70">70+</option>
+          <option value="80">80+</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Travel</label>
+        <select id="sf-travel" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
+          <option value="">Any</option>
+          <option value="true">Willing to travel</option>
+          <option value="false">No travel</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- ═══ DEMAND DASHBOARD VIEW ═══ -->
+    <div id="view-demand">
+      <div class="page-header">
+        <div>
+          <h1>Demand Dashboard</h1>
+          <p>Open project roles awaiting staffing. Click a role to view ranked candidate matches.</p>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">Open Roles</div>
+          <div class="stat-value" id="stat-open-roles">—</div>
+          <div class="stat-sub">Across all clients</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Available Consultants</div>
+          <div class="stat-value" id="stat-avail">—</div>
+          <div class="stat-sub">On bench or rolling off</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Match Score</div>
+          <div class="stat-value" id="stat-avg-score">—</div>
+          <div class="stat-sub">Across all role matches</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Contracts Signed</div>
+          <div class="stat-value" id="stat-signed">—</div>
+          <div class="stat-sub">Ready to staff immediately</div>
+        </div>
+      </div>
+
+      <!-- Role table -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Open Roles</span>
+          <input type="text" id="role-search" placeholder="Search client, role, JRS…" style="padding:5px 10px;font-size:13px;border:1px solid var(--border);border-radius:5px;width:220px;" oninput="renderRoleTable()" />
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Role / Client</th>
+              <th>JRS</th>
+              <th>Band</th>
+              <th>Start Date</th>
+              <th>Location</th>
+              <th>Contract</th>
+              <th>Top Match</th>
+              <th>Matches</th>
+            </tr>
+          </thead>
+          <tbody id="role-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ CANDIDATE DASHBOARD VIEW ═══ -->
+    <div id="view-candidates">
+      <div class="btn-back" onclick="showDemand()">← Back to Open Roles</div>
+
+      <div class="page-header" id="cand-page-header">
+        <div>
+          <h1 id="cand-role-title">—</h1>
+          <p id="cand-role-subtitle">—</p>
+        </div>
+      </div>
+
+      <!-- Role summary card -->
+      <div class="card" style="margin-bottom:20px;" id="role-summary-card"></div>
+
+      <!-- Filter bar for candidates -->
+      <div class="filter-bar" id="cand-filter-bar">
+        <div class="filter-group">
+          <label>Min Score</label>
+          <select id="cf-score" onchange="renderCandidates()">
+            <option value="0">Any</option>
+            <option value="50">50+</option>
+            <option value="60">60+</option>
+            <option value="70">70+</option>
+            <option value="80">80+</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Band</label>
+          <select id="cf-band" onchange="renderCandidates()">
+            <option value="">Any</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Availability</label>
+          <select id="cf-avail" onchange="renderCandidates()">
+            <option value="">Any</option>
+            <option value="30">Within 30 days</option>
+            <option value="60">Within 60 days</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Travel</label>
+          <select id="cf-travel" onchange="renderCandidates()">
+            <option value="">Any</option>
+            <option value="true">Willing</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <button class="filter-clear" onclick="clearCandFilters()">Clear Filters</button>
+      </div>
+
+      <div id="candidate-list" class="candidate-panel visible"></div>
+    </div>
+
+  </main>
+</div>
+
+<script type="module">
+// ─── Data ───────────────────────────────────────────────────────────────────
+
+const consultants = [
+  { id:"C001", name:"Arjun Mehta", band:8, jrs:"Cloud Solution Architect", skills:["AWS","Kubernetes","Terraform","Python","Solution Architecture","DevOps"], certifications:["AWS Solutions Architect Professional","CKA"], cvExists:true, cvRecencyMonths:2, availabilityDate:"2026-09-01", location:"Austin, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
+  { id:"C002", name:"Maria Santos", band:7, jrs:"Data Engineer", skills:["Python","Spark","SQL","Databricks","Azure","ETL","Data Pipelines"], certifications:["Azure Data Engineer Associate"], cvExists:true, cvRecencyMonths:5, availabilityDate:"2026-09-15", location:"Chicago, IL", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
+  { id:"C003", name:"Devon Clarke", band:6, jrs:"Application Developer", skills:["React","Node.js","TypeScript","REST APIs","PostgreSQL"], certifications:[], cvExists:true, cvRecencyMonths:14, availabilityDate:"2026-10-01", location:"Atlanta, GA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false },
+  { id:"C004", name:"Priya Nair", band:9, jrs:"AI/ML Specialist", skills:["Python","TensorFlow","PyTorch","NLP","LLMs","MLOps","AWS"], certifications:["AWS Machine Learning Specialty","Google Cloud Professional ML Engineer"], cvExists:true, cvRecencyMonths:1, availabilityDate:"2026-08-25", location:"San Jose, CA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
+  { id:"C005", name:"James Whitfield", band:7, jrs:"Cloud Solution Architect", skills:["AWS","Azure","Terraform","Solution Architecture","Security"], certifications:["AWS Solutions Architect Associate"], cvExists:false, cvRecencyMonths:null, availabilityDate:"2026-09-05", location:"Dallas, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
+  { id:"C006", name:"Yuki Tanaka", band:8, jrs:"Data Engineer", skills:["Python","Spark","Databricks","Snowflake","dbt","SQL","Kafka","Azure"], certifications:["Azure Data Engineer Associate","Databricks Certified Associate"], cvExists:true, cvRecencyMonths:3, availabilityDate:"2026-09-10", location:"Seattle, WA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
+  { id:"C007", name:"Fatima Al-Rashid", band:6, jrs:"Application Developer", skills:["Java","Spring Boot","Kubernetes","REST APIs","PostgreSQL","Docker"], certifications:["CKA"], cvExists:true, cvRecencyMonths:7, availabilityDate:"2026-09-20", location:"New York, NY", travelWillingness:false, assignmentStatus:"Bench", benchStatus:true },
+  { id:"C008", name:"Carlos Rivera", band:7, jrs:"AI/ML Specialist", skills:["Python","scikit-learn","TensorFlow","NLP","Data Analysis","SQL"], certifications:[], cvExists:true, cvRecencyMonths:20, availabilityDate:"2026-11-01", location:"Miami, FL", travelWillingness:true, assignmentStatus:"Active", benchStatus:false },
+  { id:"C009", name:"Amara Osei", band:8, jrs:"Cloud Solution Architect", skills:["GCP","Kubernetes","Terraform","Python","Solution Architecture","Security","Networking"], certifications:["GCP Professional Cloud Architect","CKA"], cvExists:true, cvRecencyMonths:4, availabilityDate:"2026-09-01", location:"Washington, DC", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
+  { id:"C010", name:"Lisa Chen", band:7, jrs:"Data Engineer", skills:["Python","SQL","Databricks","Azure","Power BI"], certifications:[], cvExists:true, cvRecencyMonths:9, availabilityDate:"2026-10-15", location:"Boston, MA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false },
+];
+
+const roles = [
+  { id:"R001", seatId:"TR-4821", client:"Meridian Financial Group", projectName:"Cloud Migration Program", roleTitle:"Senior Cloud Architect", jrs:"Cloud Solution Architect", bandMin:7, bandMax:9, requiredSkills:["AWS","Terraform","Solution Architecture","Kubernetes"], niceToHaveSkills:["Python","DevOps","Security"], certifications:["AWS Solutions Architect Professional"], startDate:"2026-09-15", weeklyHours:40, location:"Austin, TX", travelRequired:true, contractSigned:true, status:"Open" },
+  { id:"R002", seatId:"TR-4905", client:"NovaTech Healthcare", projectName:"Data Platform Modernization", roleTitle:"Senior Data Engineer", jrs:"Data Engineer", bandMin:7, bandMax:8, requiredSkills:["Python","Spark","SQL","Databricks","ETL"], niceToHaveSkills:["Azure","dbt","Kafka","Snowflake"], certifications:["Azure Data Engineer Associate"], startDate:"2026-09-20", weeklyHours:40, location:"Chicago, IL", travelRequired:false, contractSigned:true, status:"Open" },
+  { id:"R003", seatId:"TR-5012", client:"Apex Logistics", projectName:"AI Demand Forecasting", roleTitle:"AI/ML Engineer", jrs:"AI/ML Specialist", bandMin:8, bandMax:9, requiredSkills:["Python","TensorFlow","NLP","MLOps","LLMs"], niceToHaveSkills:["AWS","PyTorch","Kubernetes"], certifications:["AWS Machine Learning Specialty"], startDate:"2026-09-01", weeklyHours:40, location:"San Francisco, CA", travelRequired:true, contractSigned:true, status:"Open" },
+  { id:"R004", seatId:"TR-5103", client:"BlueRidge Energy", projectName:"Digital Transformation", roleTitle:"Full-Stack Developer", jrs:"Application Developer", bandMin:6, bandMax:7, requiredSkills:["React","Node.js","REST APIs","PostgreSQL"], niceToHaveSkills:["TypeScript","Docker","Kubernetes"], certifications:[], startDate:"2026-10-01", weeklyHours:40, location:"Atlanta, GA", travelRequired:false, contractSigned:false, status:"Open" },
+  { id:"R005", seatId:"TR-5218", client:"Paramount Retail", projectName:"Azure Data Warehouse", roleTitle:"Data Platform Engineer", jrs:"Data Engineer", bandMin:7, bandMax:9, requiredSkills:["Python","Azure","SQL","Databricks"], niceToHaveSkills:["Snowflake","dbt","Power BI","Kafka"], certifications:[], startDate:"2026-10-10", weeklyHours:32, location:"Seattle, WA", travelRequired:false, contractSigned:true, status:"Open" },
+];
+
+// ─── Scoring Engine ──────────────────────────────────────────────────────────
+
+const WEIGHTS = { skills:0.35, band:0.20, availability:0.18, location:0.10, jrs:0.10, certifications:0.07 };
+
+function daysBetween(a, b) { return (new Date(a) - new Date(b)) / 86400000; }
+function norm(s) { return s.toLowerCase().trim(); }
+
+function scoreSkills(c, r) {
+  const req = r.requiredSkills.map(norm), nth = r.niceToHaveSkills.map(norm), cs = c.skills.map(norm);
+  const reqM = req.filter(s => cs.includes(s)), nthM = nth.filter(s => cs.includes(s));
+  const reqScore = req.length > 0 ? (reqM.length / req.length) * 100 : 100;
+  const niceBonus = nth.length > 0 ? (nthM.length / nth.length) * 20 : 0;
+  let pen = 0;
+  if (!c.cvExists) pen = 15; else if (c.cvRecencyMonths > 12) pen = 10; else if (c.cvRecencyMonths > 6) pen = 5;
+  return { score: Math.max(0, Math.round(Math.min(100, reqScore + niceBonus - pen))), reqMatched: reqM.length, reqTotal: req.length, niceMatched: nthM.length, niceTotal: nth.length, missingRequired: r.requiredSkills.filter(s => !c.skills.map(norm).includes(norm(s))) };
+}
+
+function scoreBand(c, r) {
+  const b = c.band;
+  if (b >= r.bandMin && b <= r.bandMax) return { score:100, note:"Within required band range" };
+  if (b === r.bandMin - 1) return { score:75, note:"One band below minimum" };
+  if (b === r.bandMax + 1) return { score:70, note:"One band above maximum" };
+  if (b < r.bandMin - 1) return { score: Math.max(0, 50 - (r.bandMin-1-b)*20), note:"Band significantly below requirement" };
+  return { score: Math.max(0, 40 - (b-r.bandMax-1)*20), note:"Band significantly above requirement" };
+}
+
+function scoreAvailability(c, r) {
+  const d = daysBetween(c.availabilityDate, r.startDate);
+  if (d <= 0 && d >= -30) return { score:100, note:"Available within 30 days of role start", daysGap: Math.abs(d) };
+  if (d < -30 && d >= -60) return { score:85, note:"Available 30–60 days early", daysGap: Math.abs(d) };
+  if (d < -60) return { score:65, note:"Available well before role start", daysGap: Math.abs(d) };
+  if (d > 0 && d <= 14) return { score:80, note:"Available within 2 weeks after start", daysGap: d };
+  if (d > 14 && d <= 30) return { score:60, note:"Available 2–4 weeks after start", daysGap: d };
+  return { score: Math.max(0, Math.round(40 - d * 0.5)), note:"Availability significantly misaligned", daysGap: d };
+}
+
+function scoreLocation(c, r) {
+  const cState = c.location.split(",")[1]?.trim(), rState = r.location.split(",")[1]?.trim();
+  if (!r.travelRequired && !c.travelWillingness) {
+    if (cState && rState && cState === rState) return { score:100, note:"Same state, no travel required" };
+    return { score:55, note:"Different location, travel not possible" };
+  }
+  if (r.travelRequired && !c.travelWillingness) return { score:40, note:"Travel required but consultant unwilling" };
+  if (cState && rState && cState === rState) return { score:100, note:"Same state" };
+  if (c.travelWillingness) return { score:85, note:"Different location, travel willing" };
+  return { score:60, note:"Different location" };
+}
+
+function scoreJRS(c, r) {
+  if (c.jrs === r.jrs) return { score:100, note:"Exact JRS match" };
+  const cW = c.jrs.toLowerCase().split(/\s+/), rW = r.jrs.toLowerCase().split(/\s+/);
+  const shared = cW.filter(w => rW.includes(w) && w.length > 3);
+  if (shared.length > 0) return { score: Math.min(90, 50 + shared.length*10), note:`Partial JRS overlap: ${shared.join(", ")}` };
+  return { score:20, note:"No JRS alignment" };
+}
+
+function scoreCerts(c, r) {
+  if (!r.certifications || r.certifications.length === 0) return { score:100, note:"No certifications required", missing:[] };
+  const cc = c.certifications.map(x => x.toLowerCase());
+  const req = r.certifications.map(x => x.toLowerCase());
+  const matched = req.filter(x => cc.includes(x));
+  const missing = r.certifications.filter(x => !c.certifications.map(y => y.toLowerCase()).includes(x.toLowerCase()));
+  return { score: Math.round((matched.length / req.length) * 100), note: missing.length === 0 ? "All certifications met" : `Missing ${missing.length} cert(s)`, missing };
+}
+
+function buildRisks(c, r, dims) {
+  const risks = [];
+  if (dims.certifications.missing?.length > 0) risks.push({ type:"Missing Certifications", severity:"medium", detail:`Missing: ${dims.certifications.missing.join(", ")}` });
+  if (dims.skills.missingRequired?.length > 0) risks.push({ type:"Missing Required Skills", severity: dims.skills.missingRequired.length > 2 ? "high" : "medium", detail:`Missing: ${dims.skills.missingRequired.join(", ")}` });
+  if (!c.cvExists) risks.push({ type:"No CV on File", severity:"high", detail:"No CV found for this consultant" });
+  else if (c.cvRecencyMonths > 12) risks.push({ type:"Outdated CV", severity:"medium", detail:`CV is ${c.cvRecencyMonths} months old` });
+  if (dims.availability.daysGap > 30) risks.push({ type:"Availability Risk", severity: dims.availability.daysGap > 60 ? "high" : "medium", detail: dims.availability.note });
+  if (dims.location.score < 60) risks.push({ type:"Location Conflict", severity:"medium", detail: dims.location.note });
+  if (dims.band.score < 75) risks.push({ type:"Band Mismatch", severity:"low", detail: dims.band.note });
+  return risks;
+}
+
+function generateNarrative(c, r, dims, score) {
+  const s = [], g = [];
+  if (dims.skills.score >= 80) s.push(`strong skills alignment (${dims.skills.reqMatched}/${dims.skills.reqTotal} required skills matched)`);
+  else if (dims.skills.score >= 55) s.push(`partial skills match (${dims.skills.reqMatched}/${dims.skills.reqTotal} required skills)`);
+  else g.push(`limited skills match (only ${dims.skills.reqMatched} of ${dims.skills.reqTotal} required skills)`);
+  if (dims.band.score === 100) s.push("band level within specified range");
+  else if (dims.band.score >= 70) s.push(`acceptable band (Band ${c.band} vs. req. Band ${r.bandMin}–${r.bandMax})`);
+  else g.push(`band concern (Band ${c.band} vs. req. Band ${r.bandMin}–${r.bandMax})`);
+  if (dims.availability.score >= 85) s.push("availability aligns with role start");
+  else if (dims.availability.score < 65) g.push(`availability risk — ${dims.availability.note.toLowerCase()}`);
+  if (dims.location.score >= 85) s.push("location compatible with role requirements");
+  else if (dims.location.score < 60) g.push("location may pose a challenge");
+  if (dims.certifications.score === 100 && r.certifications.length > 0) s.push("all required certifications held");
+  else if (dims.certifications.missing?.length > 0) g.push(`missing: ${dims.certifications.missing.join(", ")}`);
+  let n = score >= 80 ? `${c.name} is a strong candidate` : score >= 60 ? `${c.name} is a reasonable candidate` : `${c.name} may be a stretch`;
+  n += ` for this role`;
+  if (s.length > 0) n += ` due to ${s.join(", ")}`;
+  if (g.length > 0) n += `. Key gaps: ${g.join("; ")}`;
+  return n + ".";
+}
+
+function scoreConsultant(c, r) {
+  const dims = {
+    skills: scoreSkills(c, r),
+    band: scoreBand(c, r),
+    availability: scoreAvailability(c, r),
+    location: scoreLocation(c, r),
+    jrs: scoreJRS(c, r),
+    certifications: scoreCerts(c, r),
+  };
+  const overall = Math.round(
+    dims.skills.score * WEIGHTS.skills + dims.band.score * WEIGHTS.band +
+    dims.availability.score * WEIGHTS.availability + dims.location.score * WEIGHTS.location +
+    dims.jrs.score * WEIGHTS.jrs + dims.certifications.score * WEIGHTS.certifications
+  );
+  return { consultant:c, role:r, overallScore:overall, dimensions:dims, risks:buildRisks(c,r,dims), narrative:generateNarrative(c,r,dims,overall) };
+}
+
+function rankForRole(role) {
+  return consultants.map(c => scoreConsultant(c, role)).sort((a,b) => b.overallScore - a.overallScore).map((r,i) => ({ ...r, rank:i+1 }));
+}
+
+// ─── State ───────────────────────────────────────────────────────────────────
+
+let currentRole = null;
+let currentRankings = [];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function scoreColor(s) {
+  if (s >= 80) return "#198038";
+  if (s >= 65) return "#0f62fe";
+  if (s >= 50) return "#b45309";
+  return "#a2191f";
+}
+
+function scoreBadgeClass(s) {
+  if (s >= 80) return "badge-green";
+  if (s >= 65) return "badge-blue";
+  if (s >= 50) return "badge-yellow";
+  return "badge-red";
+}
+
+function fmtDate(d) {
+  if (!d) return "—";
+  const dt = new Date(d);
+  return dt.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+}
+
+function barHtml(score) {
+  const color = scoreColor(score);
+  return `<div class="score-bar-wrap">
+    <div class="score-bar-outer"><div class="score-bar-inner" style="width:${score}%;background:${color}"></div></div>
+    <span class="score-num" style="color:${color}">${score}</span>
+  </div>`;
+}
+
+// ─── Demand Dashboard ────────────────────────────────────────────────────────
+
+function initStats() {
+  const open = roles.filter(r => r.status === "Open").length;
+  const avail = consultants.filter(c => c.benchStatus || c.assignmentStatus === "Project Ending").length;
+  const signed = roles.filter(r => r.contractSigned).length;
+  // compute avg top score per role
+  let total = 0;
+  roles.forEach(r => {
+    const top = rankForRole(r)[0];
+    total += top ? top.overallScore : 0;
+  });
+  const avg = Math.round(total / roles.length);
+  document.getElementById("stat-open-roles").textContent = open;
+  document.getElementById("stat-avail").textContent = avail;
+  document.getElementById("stat-avg-score").textContent = avg;
+  document.getElementById("stat-signed").textContent = signed;
+  document.getElementById("sidebar-role-count").textContent = open;
+}
+
+function renderRoleTable() {
+  const query = (document.getElementById("role-search").value || "").toLowerCase();
+  const tbody = document.getElementById("role-table-body");
+  let filtered = roles;
+  if (query) {
+    filtered = roles.filter(r =>
+      r.client.toLowerCase().includes(query) ||
+      r.roleTitle.toLowerCase().includes(query) ||
+      r.jrs.toLowerCase().includes(query) ||
+      r.projectName.toLowerCase().includes(query)
+    );
+  }
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">No roles match your search.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(role => {
+    const rankings = rankForRole(role);
+    const top = rankings[0];
+    const matchCount = rankings.filter(r => r.overallScore >= 50).length;
+    const contractBadge = role.contractSigned
+      ? `<span class="badge badge-green">Signed</span>`
+      : `<span class="badge badge-yellow">Pending</span>`;
+    const topBadge = top
+      ? `<span class="badge ${scoreBadgeClass(top.overallScore)}">${top.overallScore}</span>`
+      : "—";
+    return `<tr onclick="openRole('${role.id}')">
+      <td>
+        <div style="font-weight:600">${role.roleTitle}</div>
+        <div style="font-size:12px;color:var(--muted)">${role.client} · ${role.projectName}</div>
+      </td>
+      <td>${role.jrs}</td>
+      <td>Band ${role.bandMin}–${role.bandMax}</td>
+      <td>${fmtDate(role.startDate)}</td>
+      <td>${role.location}</td>
+      <td>${contractBadge}</td>
+      <td>${topBadge}</td>
+      <td><span style="font-weight:600;color:var(--accent)">${matchCount}</span> <span style="color:var(--muted);font-size:12px;">≥50</span></td>
+    </tr>`;
+  }).join("");
+}
+
+// ─── Candidate Dashboard ─────────────────────────────────────────────────────
+
+function openRole(roleId) {
+  currentRole = roles.find(r => r.id === roleId);
+  currentRankings = rankForRole(currentRole);
+  showCandidates();
+  renderRoleSummary();
+  renderCandidates();
+}
+
+function renderRoleSummary() {
+  const r = currentRole;
+  document.getElementById("cand-role-title").textContent = r.roleTitle;
+  document.getElementById("cand-role-subtitle").textContent = `${r.client} · ${r.projectName} · Seat ${r.seatId}`;
+  const contractBadge = r.contractSigned ? `<span class="badge badge-green">Contract Signed</span>` : `<span class="badge badge-yellow">Contract Pending</span>`;
+  const travelBadge = r.travelRequired ? `<span class="badge badge-blue">Travel Required</span>` : `<span class="badge badge-gray">No Travel</span>`;
+  document.getElementById("role-summary-card").innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--border);">
+      ${[
+        ["JRS", r.jrs],
+        ["Band", `Band ${r.bandMin}–${r.bandMax}`],
+        ["Start Date", fmtDate(r.startDate)],
+        ["Hours/Week", r.weeklyHours + " hrs"],
+      ].map(([l,v],i) => `<div style="padding:12px 16px;${i<3?'border-right:1px solid var(--border)':''}">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">${l}</div>
+        <div style="font-weight:600;font-size:13px;">${v}</div>
+      </div>`).join("")}
+    </div>
+    <div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+      <div style="font-size:12px;"><span style="color:var(--muted)">Location:</span> <strong>${r.location}</strong></div>
+      ${contractBadge} ${travelBadge}
+      <div style="font-size:12px;margin-left:8px;"><span style="color:var(--muted)">Required Skills:</span>
+        ${r.requiredSkills.map(s => `<span class="skill-chip">${s}</span>`).join("")}
+      </div>
+    </div>`;
+}
+
+function renderCandidates() {
+  const minScore = parseInt(document.getElementById("cf-score").value) || 0;
+  const bandF = document.getElementById("cf-band").value;
+  const availF = document.getElementById("cf-avail").value;
+  const travelF = document.getElementById("cf-travel").value;
+
+  const filtered = currentRankings.filter(r => {
+    if (r.overallScore < minScore) return false;
+    if (bandF && r.consultant.band !== parseInt(bandF)) return false;
+    if (availF) {
+      const days = daysBetween(currentRole.startDate, r.consultant.availabilityDate);
+      if (Math.abs(days) > parseInt(availF)) return false;
+    }
+    if (travelF !== "") {
+      if (travelF === "true" && !r.consultant.travelWillingness) return false;
+      if (travelF === "false" && r.consultant.travelWillingness) return false;
+    }
+    return true;
+  });
+
+  const container = document.getElementById("candidate-list");
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-title">No candidates match your filters</div><p>Try relaxing the filter criteria above.</p></div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map((result, displayIdx) => {
+    const c = result.consultant;
+    const dims = result.dimensions;
+    const score = result.overallScore;
+    const rankClass = result.rank === 1 ? "rank-1" : result.rank === 2 ? "rank-2" : result.rank === 3 ? "rank-3" : "";
+    const scoreCol = scoreColor(score);
+
+    const statusBadge = c.benchStatus
+      ? `<span class="badge badge-green">On Bench</span>`
+      : c.assignmentStatus === "Project Ending"
+        ? `<span class="badge badge-yellow">Rolling Off</span>`
+        : `<span class="badge badge-gray">Active</span>`;
+
+    const cvBadge = !c.cvExists
+      ? `<span class="badge badge-red">No CV</span>`
+      : c.cvRecencyMonths > 12
+        ? `<span class="badge badge-yellow">CV ${c.cvRecencyMonths}mo old</span>`
+        : `<span class="badge badge-green">CV Current</span>`;
+
+    const riskHtml = result.risks.length === 0
+      ? `<div style="font-size:12px;color:var(--green);font-weight:600;">✓ No significant risks identified</div>`
+      : result.risks.map(risk => `
+        <div class="risk-item risk-${risk.severity}">
+          <div class="risk-dot"></div>
+          <div><span class="risk-type">${risk.type}</span><span class="risk-detail">— ${risk.detail}</span></div>
+        </div>`).join("");
+
+    const dimRows = [
+      ["Skills Match", dims.skills.score, `${dims.skills.reqMatched}/${dims.skills.reqTotal} required`],
+      ["JRS Alignment", dims.jrs.score, dims.jrs.note],
+      ["Band Fit", dims.band.score, dims.band.note],
+      ["Availability", dims.availability.score, dims.availability.note],
+      ["Location Fit", dims.location.score, dims.location.note],
+      ["Certifications", dims.certifications.score, dims.certifications.note],
+    ];
+
+    const reqSkillsHtml = currentRole.requiredSkills.map(s => {
+      const matched = c.skills.map(norm).includes(norm(s));
+      return `<span class="skill-chip ${matched ? 'matched' : 'missing'}">${s}</span>`;
+    }).join("");
+
+    return `
+    <div class="candidate-card" id="cc-${c.id}">
+      <div class="candidate-card-header" onclick="toggleCandidate('${c.id}')">
+        <div class="rank-circle ${rankClass}">#${result.rank}</div>
+        <div>
+          <div class="candidate-name">${c.name}</div>
+          <div class="candidate-meta">Band ${c.band} · ${c.jrs} · ${c.location} · Available ${fmtDate(c.availabilityDate)}</div>
+          <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">${statusBadge} ${cvBadge}</div>
+        </div>
+        <div class="candidate-score-big" style="margin-left:auto;">
+          <div class="score-big-num" style="color:${scoreCol}">${score}</div>
+          <div class="score-big-label">Match Score</div>
+        </div>
+        <svg id="chevron-${c.id}" width="16" height="16" viewBox="0 0 16 16" fill="var(--muted)" style="margin-left:8px;transform:rotate(0deg);transition:transform .2s;flex-shrink:0"><path d="M4 6l4 4 4-4"/></svg>
+      </div>
+      <div class="candidate-body" id="body-${c.id}">
+        <div class="narrative-box">
+          <div class="narrative-label">🤖 AI Recommendation</div>
+          ${result.narrative}
+        </div>
+
+        <div class="dim-grid">
+          ${dimRows.map(([label, sc, note]) => `
+            <div class="dim-cell">
+              <div class="dim-cell-label">${label}</div>
+              ${barHtml(sc)}
+              <div style="font-size:11px;color:var(--muted);margin-top:4px;">${note}</div>
+            </div>`).join("")}
+        </div>
+
+        <div class="skills-row">
+          <div class="skills-label">Required Skills Coverage</div>
+          ${reqSkillsHtml}
+          ${c.skills.filter(s => !currentRole.requiredSkills.map(norm).includes(norm(s)) && currentRole.niceToHaveSkills.map(norm).includes(norm(s))).map(s => `<span class="skill-chip matched" title="Nice-to-have">${s} ✦</span>`).join("")}
+        </div>
+
+        <div class="risks-section">
+          <div class="risks-label">Risk &amp; Gap Analysis</div>
+          ${riskHtml}
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function toggleCandidate(id) {
+  const body = document.getElementById(`body-${id}`);
+  const chevron = document.getElementById(`chevron-${id}`);
+  const isOpen = body.classList.contains("open");
+  body.classList.toggle("open", !isOpen);
+  chevron.style.transform = isOpen ? "rotate(0deg)" : "rotate(180deg)";
+}
+
+// ─── View switching ───────────────────────────────────────────────────────────
+
+function showDemand() {
+  document.getElementById("view-demand").style.display = "block";
+  document.getElementById("view-candidates").style.display = "none";
+  document.getElementById("nav-demand").classList.add("active");
+}
+
+function showCandidates() {
+  document.getElementById("view-demand").style.display = "none";
+  document.getElementById("view-candidates").style.display = "block";
+  document.getElementById("nav-demand").classList.remove("active");
+}
+
+// ─── Filter helpers ───────────────────────────────────────────────────────────
+
+function applyFilters() { renderRoleTable(); }
+
+function clearCandFilters() {
+  document.getElementById("cf-score").value = "0";
+  document.getElementById("cf-band").value = "";
+  document.getElementById("cf-avail").value = "";
+  document.getElementById("cf-travel").value = "";
+  renderCandidates();
+}
+
+// ─── Expose globals & init ────────────────────────────────────────────────────
+
+window.openRole = openRole;
+window.toggleCandidate = toggleCandidate;
+window.showDemand = showDemand;
+window.renderRoleTable = renderRoleTable;
+window.renderCandidates = renderCandidates;
+window.applyFilters = applyFilters;
+window.clearCandFilters = clearCandFilters;
+
+initStats();
+renderRoleTable();
+</script>
+
+</body>
+</html>
