@@ -16,7 +16,6 @@ The platform is designed to:
 - Weighted scoring model for candidate recommendations
 - Skills-based matching
 - JRS alignment analysis
-- Availability matching
 - Band fit evaluation
 - Availability matching
 - Location and travel consideration
