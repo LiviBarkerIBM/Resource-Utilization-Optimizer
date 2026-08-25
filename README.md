@@ -14,7 +14,7 @@ The application evaluates consultant skills, availability, band alignment, certi
 
 ## Business Objective
 The platform is designed to:
-- Match available consultants (supply) to project staffing demands
+- Match available consultants to project staffing demands
 - Reduce consultant bench time
 - Improve staffing efficiency and decision quality
 - Generate ranked staffing recommendations
@@ -33,7 +33,7 @@ The platform is designed to:
 - Availability matching
 - Location and travel consideration
 - Certification validation
-- **Industry experience matching** — scans CV industries against project industry requirements
+- Industry experience matching (scans CV industries against project industry requirements)
 
 ### Match Scoring
 Each consultant receives:
@@ -53,17 +53,17 @@ Flags:
 - Availability conflicts
 - Location concerns
 - Band mismatches
-- **Industry experience gaps**
+- Industry experience gaps
 
 ### Search & Filtering
 
 #### Demand Dashboard Filters (Sidebar)
 Users can filter open roles by:
-- **Dept** — department owning the role
-- **Manager** — hiring manager
-- **Band** — required band range
-- **Project** — specific project name
-- **Quarter** — project start quarter (e.g. Q3 2026, Q4 2026)
+- Dept
+- Manager
+- Band
+- Project
+- Quarter
 - JRS
 - Min Match Score
 - Travel requirement
@@ -75,7 +75,7 @@ Users can filter ranked candidates by:
 - Band
 - Availability (within 30 / 60 days of role start)
 - Travel willingness
-- **Associate Availability by Date** — from/to date range picker
+- Associate Availability by Date (from/to date range picker)
 
 ### Dashboards
 
