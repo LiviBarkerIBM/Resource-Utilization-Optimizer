@@ -103,12 +103,12 @@ Displays:
 ### Consultant Data
 | Field | Required | Notes |
 |---|---|---|
-| name | ✅ | Full name |
-| band | ✅ | e.g. 6, 7, 8, 9 |
-| jrs | ✅ | Job Role Structure title |
-| availabilityDate | ✅ | YYYY-MM-DD |
-| location | ✅ | City, ST format |
-| skills | ✅ | Comma-separated list |
+| name | Yes | Full name |
+| band | Yes | e.g. 6, 7, 8, 9 |
+| jrs | Yes | Job Role Structure title |
+| availabilityDate | Yes | YYYY-MM-DD |
+| location | Yes | City, ST format |
+| skills | Yes | Comma-separated list |
 | id | optional | Auto-generated if blank |
 | dept | optional | Department name |
 | manager | optional | Manager name |
@@ -123,15 +123,15 @@ Displays:
 ### Project Demand Data
 | Field | Required | Notes |
 |---|---|---|
-| roleTitle | ✅ | |
-| client | ✅ | |
-| projectName | ✅ | |
-| jrs | ✅ | |
-| bandMin | ✅ | |
-| bandMax | ✅ | |
-| requiredSkills | ✅ | Comma-separated |
-| startDate | ✅ | YYYY-MM-DD |
-| location | ✅ | |
+| roleTitle | Yes | |
+| client | Yes | |
+| projectName | Yes | |
+| jrs | Yes | |
+| bandMin | Yes | |
+| bandMax | Yes | |
+| requiredSkills | Yes | Comma-separated |
+| startDate | Yes | YYYY-MM-DD |
+| location | Yes | |
 | id | optional | Auto-generated if blank |
 | seatId | optional | Talent Request ID |
 | dept | optional | |
@@ -233,13 +233,13 @@ Produces a 2-sheet `.xlsx` file named `{ProjectName}_Candidates_YYYY-MM-DD.xlsx`
 
 ---
 
-## MVP Scope — Delivered
-- ✅ Consultant and project role data ingestion (upload + sample)
-- ✅ 7-dimension matching and scoring engine including industry fit
-- ✅ Ranked candidate recommendations
-- ✅ AI-generated recommendation summaries
-- ✅ Risk and gap analysis (skills, certs, CV, availability, location, band, industry)
-- ✅ Search and filtering (dept, manager, band, project, quarter, JRS, score, travel, industry, availability date range)
-- ✅ Workforce staffing dashboards (Demand + Candidate)
-- ✅ Excel report export (full workbook + per-role)
-- ✅ Source data upload (.xlsx / .csv) with localStorage persistence
+## MVP Scope
+- Consultant and project role data ingestion (upload + sample)
+- 7-dimension matching and scoring engine including industry fit
+- Ranked candidate recommendations
+- AI-generated recommendation summaries
+- Risk and gap analysis (skills, certs, CV, availability, location, band, industry)
+- Search and filtering (dept, manager, band, project, quarter, JRS, score, travel, industry, availability date range)
+- Workforce staffing dashboards (Demand + Candidate)
+- Excel report export (full workbook + per-role)
+- Source data upload (.xlsx / .csv) with localStorage persistence
