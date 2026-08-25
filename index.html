@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resource Utilization Optimization Tool</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -443,6 +444,194 @@
       .stat-row { grid-template-columns: 1fr 1fr; }
       .dim-grid { grid-template-columns: 1fr; }
     }
+
+    /* ── Export button ── */
+    .btn-export {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      background: #198038;
+      border: 1px solid #0e5a25;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-export:hover { background: #145c2a; }
+    .btn-export svg { flex-shrink: 0; }
+
+    /* ── Upload button ── */
+    .btn-upload {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      background: var(--accent);
+      border: 1px solid #0043ce;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-upload:hover { background: #0043ce; }
+
+    /* ── Upload Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--surface);
+      border-radius: 10px;
+      width: 640px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h2 { font-size: 16px; font-weight: 700; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--muted);
+      line-height: 1;
+      padding: 2px 6px;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* ── Drop Zone ── */
+    .upload-section { margin-bottom: 20px; }
+    .upload-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .upload-section-title .tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .tag-required { background: var(--red-light); color: var(--red); }
+    .tag-optional { background: var(--border); color: var(--muted); }
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .drop-zone-icon { font-size: 28px; margin-bottom: 6px; }
+    .drop-zone-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .drop-zone-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    .file-status {
+      margin-top: 8px;
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: 5px;
+      display: none;
+    }
+    .file-status.success { display: block; background: var(--green-light); color: var(--green); font-weight:600; }
+    .file-status.error   { display: block; background: var(--red-light);   color: var(--red);   font-weight:600; }
+    .file-status.info    { display: block; background: var(--accent-light); color: var(--accent); }
+
+    .upload-help {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+    }
+    .upload-help-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+    .upload-help table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .upload-help th { text-align: left; color: var(--muted); font-weight: 700; padding: 3px 6px; border-bottom: 1px solid var(--border); }
+    .upload-help td { padding: 3px 6px; vertical-align: top; color: var(--text); }
+    .upload-help tr:nth-child(even) td { background: var(--surface); }
+    .col-req { color: var(--red); font-weight: 700; }
+    .col-opt { color: var(--muted); }
+
+    .btn-apply {
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-apply:disabled { opacity: .45; cursor: not-allowed; }
+    .btn-apply:not(:disabled):hover { background: #0043ce; }
+    .btn-cancel-modal {
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-cancel-modal:hover { background: var(--bg); }
+
+    .upload-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:18px; }
+    .upload-tab {
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .upload-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .upload-tab-panel { display: none; }
+    .upload-tab-panel.active { display: block; }
   </style>
 </head>
 <body>
@@ -453,8 +642,149 @@
   <div class="topnav-divider"></div>
   <span class="topnav-title">Resource Utilization Optimization Tool</span>
   <div class="topnav-spacer"></div>
-  <span class="topnav-badge">DRAFT v0.1</span>
+  <button class="btn-upload" onclick="openUploadModal()">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L3.5 6H6v5h4V6h2.5L8 1zM2 13h12v1.5H2V13z"/></svg>
+    Upload Data
+  </button>
+  <div class="topnav-divider" style="margin:0 4px;"></div>
+  <button class="btn-export" onclick="exportToExcel()">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 14h12v-1.5H2V14zm6-2L4.5 8H7V2h2v6h2.5L8 12z"/></svg>
+    Export to Excel
+  </button>
+  <span id="data-source-badge" class="topnav-badge" style="margin-left:8px;">Sample Data</span>
+  <span class="topnav-badge" style="margin-left:4px;">DRAFT v0.1</span>
 </nav>
+
+<!-- ═══ UPLOAD MODAL ═══ -->
+<div class="modal-overlay" id="upload-modal" onclick="handleModalOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Upload Source Data</h2>
+      <button class="modal-close" onclick="closeUploadModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+        Upload your own consultant roster and project demand files. Accepted formats: <strong>.xlsx</strong> or <strong>.csv</strong>.
+        The app will replace the sample data and re-run all match scoring automatically.
+      </p>
+
+      <!-- Tabs -->
+      <div class="upload-tabs">
+        <div class="upload-tab active" id="tab-btn-consultants" onclick="switchUploadTab('consultants')">Consultant Roster</div>
+        <div class="upload-tab" id="tab-btn-roles" onclick="switchUploadTab('roles')">Project Demand</div>
+      </div>
+
+      <!-- ── Consultants Tab ── -->
+      <div class="upload-tab-panel active" id="tab-consultants">
+        <div class="upload-help">
+          <div class="upload-help-title">Required columns (header row must match exactly)</div>
+          <table>
+            <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+            <tr><td class="col-req">name</td><td>text</td><td>Full name</td></tr>
+            <tr><td class="col-req">band</td><td>number</td><td>e.g. 6, 7, 8, 9</td></tr>
+            <tr><td class="col-req">jrs</td><td>text</td><td>Job Role Structure title</td></tr>
+            <tr><td class="col-req">availabilityDate</td><td>date</td><td>YYYY-MM-DD</td></tr>
+            <tr><td class="col-req">location</td><td>text</td><td>City, ST format</td></tr>
+            <tr><td class="col-req">skills</td><td>text</td><td>Comma-separated list</td></tr>
+            <tr><td class="col-opt">id</td><td>text</td><td>Optional — auto-generated if blank</td></tr>
+            <tr><td class="col-opt">dept</td><td>text</td><td></td></tr>
+            <tr><td class="col-opt">manager</td><td>text</td><td></td></tr>
+            <tr><td class="col-opt">certifications</td><td>text</td><td>Comma-separated</td></tr>
+            <tr><td class="col-opt">industries</td><td>text</td><td>Comma-separated (CV industries)</td></tr>
+            <tr><td class="col-opt">travelWillingness</td><td>yes/no</td><td>true/false or yes/no</td></tr>
+            <tr><td class="col-opt">assignmentStatus</td><td>text</td><td>Bench / Active / Project Ending</td></tr>
+            <tr><td class="col-opt">benchStatus</td><td>yes/no</td><td></td></tr>
+            <tr><td class="col-opt">cvExists</td><td>yes/no</td><td></td></tr>
+            <tr><td class="col-opt">cvRecencyMonths</td><td>number</td><td></td></tr>
+          </table>
+          <div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;">Red = required &nbsp;·&nbsp; <span style="color:var(--muted);font-weight:400;">Gray = optional</span></div>
+        </div>
+
+        <div class="upload-section">
+          <div class="upload-section-title">
+            Consultant Roster File
+            <span class="tag tag-required">Required</span>
+          </div>
+          <div class="drop-zone" id="dz-consultants"
+               ondragover="dzDragOver(event,'dz-consultants')"
+               ondragleave="dzDragLeave(event,'dz-consultants')"
+               ondrop="dzDrop(event,'consultants')">
+            <input type="file" id="file-consultants" accept=".xlsx,.csv" onchange="handleFileSelect(event,'consultants')" />
+            <div class="drop-zone-icon">📋</div>
+            <div class="drop-zone-label">Drop file here or click to browse</div>
+            <div class="drop-zone-sub">Accepts .xlsx or .csv · First row must be column headers</div>
+          </div>
+          <div class="file-status" id="status-consultants"></div>
+        </div>
+
+        <div style="font-size:12px;color:var(--muted);">
+          <strong>Tip:</strong> Use <em>Export to Excel → Consultant Roster</em> tab as your template — it already has all column headers.
+        </div>
+      </div>
+
+      <!-- ── Roles Tab ── -->
+      <div class="upload-tab-panel" id="tab-roles">
+        <div class="upload-help">
+          <div class="upload-help-title">Required columns (header row must match exactly)</div>
+          <table>
+            <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+            <tr><td class="col-req">roleTitle</td><td>text</td><td></td></tr>
+            <tr><td class="col-req">client</td><td>text</td><td></td></tr>
+            <tr><td class="col-req">projectName</td><td>text</td><td></td></tr>
+            <tr><td class="col-req">jrs</td><td>text</td><td></td></tr>
+            <tr><td class="col-req">bandMin</td><td>number</td><td></td></tr>
+            <tr><td class="col-req">bandMax</td><td>number</td><td></td></tr>
+            <tr><td class="col-req">requiredSkills</td><td>text</td><td>Comma-separated</td></tr>
+            <tr><td class="col-req">startDate</td><td>date</td><td>YYYY-MM-DD</td></tr>
+            <tr><td class="col-req">location</td><td>text</td><td></td></tr>
+            <tr><td class="col-opt">id</td><td>text</td><td>Auto-generated if blank</td></tr>
+            <tr><td class="col-opt">seatId</td><td>text</td><td></td></tr>
+            <tr><td class="col-opt">dept</td><td>text</td><td></td></tr>
+            <tr><td class="col-opt">manager</td><td>text</td><td></td></tr>
+            <tr><td class="col-opt">quarter</td><td>text</td><td>e.g. Q3 2026</td></tr>
+            <tr><td class="col-opt">niceToHaveSkills</td><td>text</td><td>Comma-separated</td></tr>
+            <tr><td class="col-opt">certifications</td><td>text</td><td>Comma-separated</td></tr>
+            <tr><td class="col-opt">requiredIndustry</td><td>text</td><td></td></tr>
+            <tr><td class="col-opt">niceToHaveIndustries</td><td>text</td><td>Comma-separated</td></tr>
+            <tr><td class="col-opt">endDate</td><td>date</td><td>YYYY-MM-DD</td></tr>
+            <tr><td class="col-opt">weeklyHours</td><td>number</td><td></td></tr>
+            <tr><td class="col-opt">travelRequired</td><td>yes/no</td><td></td></tr>
+            <tr><td class="col-opt">contractSigned</td><td>yes/no</td><td></td></tr>
+            <tr><td class="col-opt">status</td><td>text</td><td>Defaults to Open</td></tr>
+          </table>
+          <div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;">Red = required &nbsp;·&nbsp; <span style="color:var(--muted);font-weight:400;">Gray = optional</span></div>
+        </div>
+
+        <div class="upload-section">
+          <div class="upload-section-title">
+            Project Demand File
+            <span class="tag tag-required">Required</span>
+          </div>
+          <div class="drop-zone" id="dz-roles"
+               ondragover="dzDragOver(event,'dz-roles')"
+               ondragleave="dzDragLeave(event,'dz-roles')"
+               ondrop="dzDrop(event,'roles')">
+            <input type="file" id="file-roles" accept=".xlsx,.csv" onchange="handleFileSelect(event,'roles')" />
+            <div class="drop-zone-icon">📁</div>
+            <div class="drop-zone-label">Drop file here or click to browse</div>
+            <div class="drop-zone-sub">Accepts .xlsx or .csv · First row must be column headers</div>
+          </div>
+          <div class="file-status" id="status-roles"></div>
+        </div>
+
+        <div style="font-size:12px;color:var(--muted);">
+          <strong>Tip:</strong> Use <em>Export to Excel → Demand Summary</em> tab as your template — it already has all column headers.
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <div id="upload-global-status" style="flex:1;font-size:12px;color:var(--muted);align-self:center;"></div>
+      <button class="btn-cancel-modal" onclick="closeUploadModal()">Cancel</button>
+      <button class="btn-apply" id="btn-apply-upload" onclick="applyUploadedData()" disabled>Apply Data</button>
+    </div>
+  </div>
+</div>
 
 <div class="layout">
   <!-- Sidebar -->
@@ -465,9 +795,35 @@
       Open Roles
       <span class="sidebar-count" id="sidebar-role-count">0</span>
     </div>
+    <div class="sidebar-item" onclick="openUploadModal()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L3.5 6H6v5h4V6h2.5L8 1zM2 13h12v1.5H2V13z"/></svg>
+      Upload Data
+    </div>
+    <div class="sidebar-item" id="sidebar-reset-btn" onclick="resetToSampleData()" style="display:none;color:var(--red);font-size:12px;">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1.5a5.5 5.5 0 110 11 5.5 5.5 0 010-11zM7 5v4.5l3.5 2 .7-1.2-3-1.7V5H7z"/></svg>
+      Reset to Sample Data
+    </div>
 
     <div class="sidebar-section-label" style="margin-top:8px;">Filters</div>
     <div style="padding: 6px 12px;">
+      <div style="margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Dept</label>
+        <select id="sf-dept" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
+          <option value="">All Depts</option>
+          <option>Cloud &amp; Platform</option>
+          <option>Data &amp; AI</option>
+          <option>Application Modernization</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Manager</label>
+        <select id="sf-manager" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
+          <option value="">All Managers</option>
+          <option>Sandra Lee</option>
+          <option>James Okafor</option>
+          <option>Rachel Kim</option>
+        </select>
+      </div>
       <div style="margin-bottom:8px;">
         <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Band</label>
         <select id="sf-band" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
@@ -476,6 +832,25 @@
           <option value="7">Band 7</option>
           <option value="8">Band 8</option>
           <option value="9">Band 9</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Project</label>
+        <select id="sf-project" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
+          <option value="">All Projects</option>
+          <option>Cloud Migration Program</option>
+          <option>Data Platform Modernization</option>
+          <option>AI Demand Forecasting</option>
+          <option>Digital Transformation</option>
+          <option>Azure Data Warehouse</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Quarter</label>
+        <select id="sf-quarter" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
+          <option value="">All Quarters</option>
+          <option>Q3 2026</option>
+          <option>Q4 2026</option>
         </select>
       </div>
       <div style="margin-bottom:8px;">
@@ -498,7 +873,7 @@
           <option value="80">80+</option>
         </select>
       </div>
-      <div>
+      <div style="margin-bottom:8px;">
         <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Travel</label>
         <select id="sf-travel" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
           <option value="">Any</option>
@@ -506,6 +881,29 @@
           <option value="false">No travel</option>
         </select>
       </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px;">Industry</label>
+        <select id="sf-industry" style="width:100%;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:12px;" onchange="applyFilters()">
+          <option value="">All Industries</option>
+          <option>Financial Services</option>
+          <option>Healthcare</option>
+          <option>Life Sciences</option>
+          <option>Insurance</option>
+          <option>K-12 Education</option>
+          <option>Higher Education</option>
+          <option>Technology</option>
+          <option>Retail</option>
+          <option>Supply Chain &amp; Logistics</option>
+          <option>Energy &amp; Utilities</option>
+          <option>Oil &amp; Gas</option>
+          <option>Manufacturing</option>
+          <option>Public Sector</option>
+          <option>Defense</option>
+          <option>Telecommunications</option>
+          <option>Non-Profit</option>
+        </select>
+      </div>
+      <button onclick="clearSidebarFilters()" style="width:100%;margin-top:4px;padding:5px 8px;font-size:12px;font-weight:600;color:var(--accent);background:none;border:1px solid var(--border);border-radius:5px;cursor:pointer;">Clear Filters</button>
     </div>
   </aside>
 
@@ -549,7 +947,13 @@
       <div class="card">
         <div class="card-header">
           <span class="card-title">Open Roles</span>
-          <input type="text" id="role-search" placeholder="Search client, role, JRS…" style="padding:5px 10px;font-size:13px;border:1px solid var(--border);border-radius:5px;width:220px;" oninput="renderRoleTable()" />
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="role-search" placeholder="Search client, role, JRS…" style="padding:5px 10px;font-size:13px;border:1px solid var(--border);border-radius:5px;width:220px;" oninput="renderRoleTable()" />
+            <button class="btn-export" onclick="exportToExcel()">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 14h12v-1.5H2V14zm6-2L4.5 8H7V2h2v6h2.5L8 12z"/></svg>
+              Export All
+            </button>
+          </div>
         </div>
         <table class="data-table">
           <thead>
@@ -578,6 +982,10 @@
           <h1 id="cand-role-title">—</h1>
           <p id="cand-role-subtitle">—</p>
         </div>
+        <button class="btn-export" onclick="exportRoleToExcel()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 14h12v-1.5H2V14zm6-2L4.5 8H7V2h2v6h2.5L8 12z"/></svg>
+          Export This Role
+        </button>
       </div>
 
       <!-- Role summary card -->
@@ -621,6 +1029,14 @@
             <option value="false">No</option>
           </select>
         </div>
+        <div class="filter-group">
+          <label>Available From</label>
+          <input type="date" id="cf-avail-from" style="border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:13px;color:var(--text);background:var(--surface);" onchange="renderCandidates()" />
+        </div>
+        <div class="filter-group">
+          <label>Available To</label>
+          <input type="date" id="cf-avail-to" style="border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:13px;color:var(--text);background:var(--surface);" onchange="renderCandidates()" />
+        </div>
         <button class="filter-clear" onclick="clearCandFilters()">Clear Filters</button>
       </div>
 
@@ -634,32 +1050,48 @@
 // ─── Data ───────────────────────────────────────────────────────────────────
 
 const consultants = [
-  { id:"C001", name:"Arjun Mehta", band:8, jrs:"Cloud Solution Architect", skills:["AWS","Kubernetes","Terraform","Python","Solution Architecture","DevOps"], certifications:["AWS Solutions Architect Professional","CKA"], cvExists:true, cvRecencyMonths:2, availabilityDate:"2026-09-01", location:"Austin, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
-  { id:"C002", name:"Maria Santos", band:7, jrs:"Data Engineer", skills:["Python","Spark","SQL","Databricks","Azure","ETL","Data Pipelines"], certifications:["Azure Data Engineer Associate"], cvExists:true, cvRecencyMonths:5, availabilityDate:"2026-09-15", location:"Chicago, IL", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
-  { id:"C003", name:"Devon Clarke", band:6, jrs:"Application Developer", skills:["React","Node.js","TypeScript","REST APIs","PostgreSQL"], certifications:[], cvExists:true, cvRecencyMonths:14, availabilityDate:"2026-10-01", location:"Atlanta, GA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false },
-  { id:"C004", name:"Priya Nair", band:9, jrs:"AI/ML Specialist", skills:["Python","TensorFlow","PyTorch","NLP","LLMs","MLOps","AWS"], certifications:["AWS Machine Learning Specialty","Google Cloud Professional ML Engineer"], cvExists:true, cvRecencyMonths:1, availabilityDate:"2026-08-25", location:"San Jose, CA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
-  { id:"C005", name:"James Whitfield", band:7, jrs:"Cloud Solution Architect", skills:["AWS","Azure","Terraform","Solution Architecture","Security"], certifications:["AWS Solutions Architect Associate"], cvExists:false, cvRecencyMonths:null, availabilityDate:"2026-09-05", location:"Dallas, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
-  { id:"C006", name:"Yuki Tanaka", band:8, jrs:"Data Engineer", skills:["Python","Spark","Databricks","Snowflake","dbt","SQL","Kafka","Azure"], certifications:["Azure Data Engineer Associate","Databricks Certified Associate"], cvExists:true, cvRecencyMonths:3, availabilityDate:"2026-09-10", location:"Seattle, WA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
-  { id:"C007", name:"Fatima Al-Rashid", band:6, jrs:"Application Developer", skills:["Java","Spring Boot","Kubernetes","REST APIs","PostgreSQL","Docker"], certifications:["CKA"], cvExists:true, cvRecencyMonths:7, availabilityDate:"2026-09-20", location:"New York, NY", travelWillingness:false, assignmentStatus:"Bench", benchStatus:true },
-  { id:"C008", name:"Carlos Rivera", band:7, jrs:"AI/ML Specialist", skills:["Python","scikit-learn","TensorFlow","NLP","Data Analysis","SQL"], certifications:[], cvExists:true, cvRecencyMonths:20, availabilityDate:"2026-11-01", location:"Miami, FL", travelWillingness:true, assignmentStatus:"Active", benchStatus:false },
-  { id:"C009", name:"Amara Osei", band:8, jrs:"Cloud Solution Architect", skills:["GCP","Kubernetes","Terraform","Python","Solution Architecture","Security","Networking"], certifications:["GCP Professional Cloud Architect","CKA"], cvExists:true, cvRecencyMonths:4, availabilityDate:"2026-09-01", location:"Washington, DC", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true },
-  { id:"C010", name:"Lisa Chen", band:7, jrs:"Data Engineer", skills:["Python","SQL","Databricks","Azure","Power BI"], certifications:[], cvExists:true, cvRecencyMonths:9, availabilityDate:"2026-10-15", location:"Boston, MA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false },
+  { id:"C001", name:"Arjun Mehta", band:8, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["AWS","Kubernetes","Terraform","Python","Solution Architecture","DevOps"], certifications:["AWS Solutions Architect Professional","CKA"], cvExists:true, cvRecencyMonths:2, availabilityDate:"2026-09-01", location:"Austin, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Telecommunications","Public Sector"] },
+  { id:"C002", name:"Maria Santos", band:7, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","Spark","SQL","Databricks","Azure","ETL","Data Pipelines"], certifications:["Azure Data Engineer Associate"], cvExists:true, cvRecencyMonths:5, availabilityDate:"2026-09-15", location:"Chicago, IL", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Healthcare","Life Sciences","Insurance"] },
+  { id:"C003", name:"Devon Clarke", band:6, jrs:"Application Developer", dept:"Application Modernization", manager:"Rachel Kim", skills:["React","Node.js","TypeScript","REST APIs","PostgreSQL"], certifications:[], cvExists:true, cvRecencyMonths:14, availabilityDate:"2026-10-01", location:"Atlanta, GA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false, industries:["K-12 Education","Higher Education","Non-Profit"] },
+  { id:"C004", name:"Priya Nair", band:9, jrs:"AI/ML Specialist", dept:"Data & AI", manager:"James Okafor", skills:["Python","TensorFlow","PyTorch","NLP","LLMs","MLOps","AWS"], certifications:["AWS Machine Learning Specialty","Google Cloud Professional ML Engineer"], cvExists:true, cvRecencyMonths:1, availabilityDate:"2026-08-25", location:"San Jose, CA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Technology","Retail","Supply Chain & Logistics"] },
+  { id:"C005", name:"James Whitfield", band:7, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["AWS","Azure","Terraform","Solution Architecture","Security"], certifications:["AWS Solutions Architect Associate"], cvExists:false, cvRecencyMonths:null, availabilityDate:"2026-09-05", location:"Dallas, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Energy & Utilities","Oil & Gas"] },
+  { id:"C006", name:"Yuki Tanaka", band:8, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","Spark","Databricks","Snowflake","dbt","SQL","Kafka","Azure"], certifications:["Azure Data Engineer Associate","Databricks Certified Associate"], cvExists:true, cvRecencyMonths:3, availabilityDate:"2026-09-10", location:"Seattle, WA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Retail","Technology","Healthcare"] },
+  { id:"C007", name:"Fatima Al-Rashid", band:6, jrs:"Application Developer", dept:"Application Modernization", manager:"Rachel Kim", skills:["Java","Spring Boot","Kubernetes","REST APIs","PostgreSQL","Docker"], certifications:["CKA"], cvExists:true, cvRecencyMonths:7, availabilityDate:"2026-09-20", location:"New York, NY", travelWillingness:false, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Insurance","Public Sector"] },
+  { id:"C008", name:"Carlos Rivera", band:7, jrs:"AI/ML Specialist", dept:"Data & AI", manager:"James Okafor", skills:["Python","scikit-learn","TensorFlow","NLP","Data Analysis","SQL"], certifications:[], cvExists:true, cvRecencyMonths:20, availabilityDate:"2026-11-01", location:"Miami, FL", travelWillingness:true, assignmentStatus:"Active", benchStatus:false, industries:["Supply Chain & Logistics","Retail","Manufacturing"] },
+  { id:"C009", name:"Amara Osei", band:8, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["GCP","Kubernetes","Terraform","Python","Solution Architecture","Security","Networking"], certifications:["GCP Professional Cloud Architect","CKA"], cvExists:true, cvRecencyMonths:4, availabilityDate:"2026-09-01", location:"Washington, DC", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Public Sector","Defense","Telecommunications"] },
+  { id:"C010", name:"Lisa Chen", band:7, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","SQL","Databricks","Azure","Power BI"], certifications:[], cvExists:true, cvRecencyMonths:9, availabilityDate:"2026-10-15", location:"Boston, MA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false, industries:["Healthcare","Life Sciences","Higher Education"] },
 ];
 
 const roles = [
-  { id:"R001", seatId:"TR-4821", client:"Meridian Financial Group", projectName:"Cloud Migration Program", roleTitle:"Senior Cloud Architect", jrs:"Cloud Solution Architect", bandMin:7, bandMax:9, requiredSkills:["AWS","Terraform","Solution Architecture","Kubernetes"], niceToHaveSkills:["Python","DevOps","Security"], certifications:["AWS Solutions Architect Professional"], startDate:"2026-09-15", weeklyHours:40, location:"Austin, TX", travelRequired:true, contractSigned:true, status:"Open" },
-  { id:"R002", seatId:"TR-4905", client:"NovaTech Healthcare", projectName:"Data Platform Modernization", roleTitle:"Senior Data Engineer", jrs:"Data Engineer", bandMin:7, bandMax:8, requiredSkills:["Python","Spark","SQL","Databricks","ETL"], niceToHaveSkills:["Azure","dbt","Kafka","Snowflake"], certifications:["Azure Data Engineer Associate"], startDate:"2026-09-20", weeklyHours:40, location:"Chicago, IL", travelRequired:false, contractSigned:true, status:"Open" },
-  { id:"R003", seatId:"TR-5012", client:"Apex Logistics", projectName:"AI Demand Forecasting", roleTitle:"AI/ML Engineer", jrs:"AI/ML Specialist", bandMin:8, bandMax:9, requiredSkills:["Python","TensorFlow","NLP","MLOps","LLMs"], niceToHaveSkills:["AWS","PyTorch","Kubernetes"], certifications:["AWS Machine Learning Specialty"], startDate:"2026-09-01", weeklyHours:40, location:"San Francisco, CA", travelRequired:true, contractSigned:true, status:"Open" },
-  { id:"R004", seatId:"TR-5103", client:"BlueRidge Energy", projectName:"Digital Transformation", roleTitle:"Full-Stack Developer", jrs:"Application Developer", bandMin:6, bandMax:7, requiredSkills:["React","Node.js","REST APIs","PostgreSQL"], niceToHaveSkills:["TypeScript","Docker","Kubernetes"], certifications:[], startDate:"2026-10-01", weeklyHours:40, location:"Atlanta, GA", travelRequired:false, contractSigned:false, status:"Open" },
-  { id:"R005", seatId:"TR-5218", client:"Paramount Retail", projectName:"Azure Data Warehouse", roleTitle:"Data Platform Engineer", jrs:"Data Engineer", bandMin:7, bandMax:9, requiredSkills:["Python","Azure","SQL","Databricks"], niceToHaveSkills:["Snowflake","dbt","Power BI","Kafka"], certifications:[], startDate:"2026-10-10", weeklyHours:32, location:"Seattle, WA", travelRequired:false, contractSigned:true, status:"Open" },
+  { id:"R001", seatId:"TR-4821", client:"Meridian Financial Group", projectName:"Cloud Migration Program", dept:"Cloud & Platform", manager:"Sandra Lee", quarter:"Q3 2026", roleTitle:"Senior Cloud Architect", jrs:"Cloud Solution Architect", bandMin:7, bandMax:9, requiredSkills:["AWS","Terraform","Solution Architecture","Kubernetes"], niceToHaveSkills:["Python","DevOps","Security"], certifications:["AWS Solutions Architect Professional"], startDate:"2026-09-15", endDate:"2027-03-15", weeklyHours:40, location:"Austin, TX", travelRequired:true, contractSigned:true, status:"Open", requiredIndustry:"Financial Services", niceToHaveIndustries:["Insurance","Public Sector"] },
+  { id:"R002", seatId:"TR-4905", client:"NovaTech Healthcare", projectName:"Data Platform Modernization", dept:"Data & AI", manager:"James Okafor", quarter:"Q3 2026", roleTitle:"Senior Data Engineer", jrs:"Data Engineer", bandMin:7, bandMax:8, requiredSkills:["Python","Spark","SQL","Databricks","ETL"], niceToHaveSkills:["Azure","dbt","Kafka","Snowflake"], certifications:["Azure Data Engineer Associate"], startDate:"2026-09-20", endDate:"2027-06-20", weeklyHours:40, location:"Chicago, IL", travelRequired:false, contractSigned:true, status:"Open", requiredIndustry:"Healthcare", niceToHaveIndustries:["Life Sciences","Insurance"] },
+  { id:"R003", seatId:"TR-5012", client:"Apex Logistics", projectName:"AI Demand Forecasting", dept:"Data & AI", manager:"James Okafor", quarter:"Q3 2026", roleTitle:"AI/ML Engineer", jrs:"AI/ML Specialist", bandMin:8, bandMax:9, requiredSkills:["Python","TensorFlow","NLP","MLOps","LLMs"], niceToHaveSkills:["AWS","PyTorch","Kubernetes"], certifications:["AWS Machine Learning Specialty"], startDate:"2026-09-01", endDate:"2027-02-28", weeklyHours:40, location:"San Francisco, CA", travelRequired:true, contractSigned:true, status:"Open", requiredIndustry:"Supply Chain & Logistics", niceToHaveIndustries:["Retail","Manufacturing"] },
+  { id:"R004", seatId:"TR-5103", client:"BlueRidge Energy", projectName:"Digital Transformation", dept:"Application Modernization", manager:"Rachel Kim", quarter:"Q4 2026", roleTitle:"Full-Stack Developer", jrs:"Application Developer", bandMin:6, bandMax:7, requiredSkills:["React","Node.js","REST APIs","PostgreSQL"], niceToHaveSkills:["TypeScript","Docker","Kubernetes"], certifications:[], startDate:"2026-10-01", endDate:"2027-03-31", weeklyHours:40, location:"Atlanta, GA", travelRequired:false, contractSigned:false, status:"Open", requiredIndustry:"K-12 Education", niceToHaveIndustries:["Higher Education","Public Sector"] },
+  { id:"R005", seatId:"TR-5218", client:"Paramount Retail", projectName:"Azure Data Warehouse", dept:"Data & AI", manager:"James Okafor", quarter:"Q4 2026", roleTitle:"Data Platform Engineer", jrs:"Data Engineer", bandMin:7, bandMax:9, requiredSkills:["Python","Azure","SQL","Databricks"], niceToHaveSkills:["Snowflake","dbt","Power BI","Kafka"], certifications:[], startDate:"2026-10-10", endDate:"2027-04-10", weeklyHours:32, location:"Seattle, WA", travelRequired:false, contractSigned:true, status:"Open", requiredIndustry:"Retail", niceToHaveIndustries:["Technology","Supply Chain & Logistics"] },
 ];
 
 // ─── Scoring Engine ──────────────────────────────────────────────────────────
 
-const WEIGHTS = { skills:0.35, band:0.20, availability:0.18, location:0.10, jrs:0.10, certifications:0.07 };
+const WEIGHTS = { skills:0.32, band:0.18, availability:0.16, location:0.09, jrs:0.09, certifications:0.06, industry:0.10 };
 
 function daysBetween(a, b) { return (new Date(a) - new Date(b)) / 86400000; }
 function norm(s) { return s.toLowerCase().trim(); }
+
+function scoreIndustry(c, r) {
+  if (!r.requiredIndustry) return { score:100, note:"No industry requirement specified", matched:[], missing:[] };
+  const ci = c.industries.map(norm);
+  const hasRequired = ci.includes(norm(r.requiredIndustry));
+  const niceMatched = (r.niceToHaveIndustries || []).filter(i => ci.includes(norm(i)));
+  if (hasRequired) {
+    const bonus = niceMatched.length > 0 ? Math.min(10, niceMatched.length * 5) : 0;
+    return { score: Math.min(100, 90 + bonus), note:`Has required industry experience: ${r.requiredIndustry}`, matched:[r.requiredIndustry, ...niceMatched], missing:[] };
+  }
+  // Check nice-to-have as partial credit
+  if (niceMatched.length > 0) {
+    return { score: 55 + Math.min(20, niceMatched.length * 10), note:`Adjacent industry experience: ${niceMatched.join(", ")}`, matched:niceMatched, missing:[r.requiredIndustry] };
+  }
+  return { score:20, note:`No relevant industry experience (requires ${r.requiredIndustry})`, matched:[], missing:[r.requiredIndustry] };
+}
 
 function scoreSkills(c, r) {
   const req = r.requiredSkills.map(norm), nth = r.niceToHaveSkills.map(norm), cs = c.skills.map(norm);
@@ -728,6 +1160,7 @@ function buildRisks(c, r, dims) {
   if (dims.availability.daysGap > 30) risks.push({ type:"Availability Risk", severity: dims.availability.daysGap > 60 ? "high" : "medium", detail: dims.availability.note });
   if (dims.location.score < 60) risks.push({ type:"Location Conflict", severity:"medium", detail: dims.location.note });
   if (dims.band.score < 75) risks.push({ type:"Band Mismatch", severity:"low", detail: dims.band.note });
+  if (dims.industry.missing?.length > 0) risks.push({ type:"Industry Experience Gap", severity: dims.industry.score < 40 ? "high" : "medium", detail: dims.industry.note });
   return risks;
 }
 
@@ -745,6 +1178,9 @@ function generateNarrative(c, r, dims, score) {
   else if (dims.location.score < 60) g.push("location may pose a challenge");
   if (dims.certifications.score === 100 && r.certifications.length > 0) s.push("all required certifications held");
   else if (dims.certifications.missing?.length > 0) g.push(`missing: ${dims.certifications.missing.join(", ")}`);
+  if (dims.industry.score >= 90) s.push(`proven ${r.requiredIndustry} industry experience`);
+  else if (dims.industry.score >= 55) s.push(`adjacent industry background (${dims.industry.matched.join(", ")})`);
+  else if (r.requiredIndustry && dims.industry.score < 55) g.push(`no ${r.requiredIndustry} industry experience on CV`);
   let n = score >= 80 ? `${c.name} is a strong candidate` : score >= 60 ? `${c.name} is a reasonable candidate` : `${c.name} may be a stretch`;
   n += ` for this role`;
   if (s.length > 0) n += ` due to ${s.join(", ")}`;
@@ -760,11 +1196,13 @@ function scoreConsultant(c, r) {
     location: scoreLocation(c, r),
     jrs: scoreJRS(c, r),
     certifications: scoreCerts(c, r),
+    industry: scoreIndustry(c, r),
   };
   const overall = Math.round(
     dims.skills.score * WEIGHTS.skills + dims.band.score * WEIGHTS.band +
     dims.availability.score * WEIGHTS.availability + dims.location.score * WEIGHTS.location +
-    dims.jrs.score * WEIGHTS.jrs + dims.certifications.score * WEIGHTS.certifications
+    dims.jrs.score * WEIGHTS.jrs + dims.certifications.score * WEIGHTS.certifications +
+    dims.industry.score * WEIGHTS.industry
   );
   return { consultant:c, role:r, overallScore:overall, dimensions:dims, risks:buildRisks(c,r,dims), narrative:generateNarrative(c,r,dims,overall) };
 }
@@ -829,15 +1267,32 @@ function initStats() {
 }
 
 function renderRoleTable() {
-  const query = (document.getElementById("role-search").value || "").toLowerCase();
+  const query    = (document.getElementById("role-search").value || "").toLowerCase();
+  const deptF    = (document.getElementById("sf-dept")?.value || "");
+  const managerF = (document.getElementById("sf-manager")?.value || "");
+  const bandF    = (document.getElementById("sf-band")?.value || "");
+  const projectF = (document.getElementById("sf-project")?.value || "");
+  const quarterF = (document.getElementById("sf-quarter")?.value || "");
+  const industryF= (document.getElementById("sf-industry")?.value || "").toLowerCase();
   const tbody = document.getElementById("role-table-body");
   let filtered = roles;
   if (query) {
-    filtered = roles.filter(r =>
+    filtered = filtered.filter(r =>
       r.client.toLowerCase().includes(query) ||
       r.roleTitle.toLowerCase().includes(query) ||
       r.jrs.toLowerCase().includes(query) ||
       r.projectName.toLowerCase().includes(query)
+    );
+  }
+  if (deptF)    filtered = filtered.filter(r => r.dept === deptF);
+  if (managerF) filtered = filtered.filter(r => r.manager === managerF);
+  if (bandF)    filtered = filtered.filter(r => parseInt(bandF) >= r.bandMin && parseInt(bandF) <= r.bandMax);
+  if (projectF) filtered = filtered.filter(r => r.projectName === projectF);
+  if (quarterF) filtered = filtered.filter(r => r.quarter === quarterF);
+  if (industryF) {
+    filtered = filtered.filter(r =>
+      norm(r.requiredIndustry || "") === industryF ||
+      (r.niceToHaveIndustries || []).map(norm).includes(industryF)
     );
   }
   if (filtered.length === 0) {
@@ -858,10 +1313,11 @@ function renderRoleTable() {
       <td>
         <div style="font-weight:600">${role.roleTitle}</div>
         <div style="font-size:12px;color:var(--muted)">${role.client} · ${role.projectName}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${role.dept} · ${role.manager} · ${role.quarter}</div>
       </td>
       <td>${role.jrs}</td>
       <td>Band ${role.bandMin}–${role.bandMax}</td>
-      <td>${fmtDate(role.startDate)}</td>
+      <td>${fmtDate(role.startDate)}${role.endDate ? `<div style="font-size:11px;color:var(--muted);">to ${fmtDate(role.endDate)}</div>` : ""}</td>
       <td>${role.location}</td>
       <td>${contractBadge}</td>
       <td>${topBadge}</td>
@@ -901,6 +1357,7 @@ function renderRoleSummary() {
     <div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
       <div style="font-size:12px;"><span style="color:var(--muted)">Location:</span> <strong>${r.location}</strong></div>
       ${contractBadge} ${travelBadge}
+      ${r.requiredIndustry ? `<div style="font-size:12px;"><span style="color:var(--muted)">Industry:</span> <span class="badge badge-purple">${r.requiredIndustry}</span>${(r.niceToHaveIndustries||[]).map(i=>`<span class="badge badge-gray" style="margin-left:4px;">${i}</span>`).join("")}</div>` : ""}
       <div style="font-size:12px;margin-left:8px;"><span style="color:var(--muted)">Required Skills:</span>
         ${r.requiredSkills.map(s => `<span class="skill-chip">${s}</span>`).join("")}
       </div>
@@ -908,10 +1365,12 @@ function renderRoleSummary() {
 }
 
 function renderCandidates() {
-  const minScore = parseInt(document.getElementById("cf-score").value) || 0;
-  const bandF = document.getElementById("cf-band").value;
-  const availF = document.getElementById("cf-avail").value;
-  const travelF = document.getElementById("cf-travel").value;
+  const minScore  = parseInt(document.getElementById("cf-score").value) || 0;
+  const bandF     = document.getElementById("cf-band").value;
+  const availF    = document.getElementById("cf-avail").value;
+  const travelF   = document.getElementById("cf-travel").value;
+  const availFrom = document.getElementById("cf-avail-from")?.value || "";
+  const availTo   = document.getElementById("cf-avail-to")?.value || "";
 
   const filtered = currentRankings.filter(r => {
     if (r.overallScore < minScore) return false;
@@ -920,6 +1379,9 @@ function renderCandidates() {
       const days = daysBetween(currentRole.startDate, r.consultant.availabilityDate);
       if (Math.abs(days) > parseInt(availF)) return false;
     }
+    // availability date range filter
+    if (availFrom && r.consultant.availabilityDate < availFrom) return false;
+    if (availTo   && r.consultant.availabilityDate > availTo)   return false;
     if (travelF !== "") {
       if (travelF === "true" && !r.consultant.travelWillingness) return false;
       if (travelF === "false" && r.consultant.travelWillingness) return false;
@@ -967,7 +1429,16 @@ function renderCandidates() {
       ["Availability", dims.availability.score, dims.availability.note],
       ["Location Fit", dims.location.score, dims.location.note],
       ["Certifications", dims.certifications.score, dims.certifications.note],
+      ["Industry Fit", dims.industry.score, dims.industry.note],
     ];
+
+    const industryChipsHtml = c.industries.map(ind => {
+      const isRequired = currentRole.requiredIndustry && norm(ind) === norm(currentRole.requiredIndustry);
+      const isNice = (currentRole.niceToHaveIndustries || []).map(norm).includes(norm(ind));
+      const cls = isRequired ? "matched" : isNice ? "matched" : "";
+      const suffix = isRequired ? " ★" : isNice ? " ✦" : "";
+      return `<span class="skill-chip ${cls}">${ind}${suffix}</span>`;
+    }).join("");
 
     const reqSkillsHtml = currentRole.requiredSkills.map(s => {
       const matched = c.skills.map(norm).includes(norm(s));
@@ -1002,6 +1473,12 @@ function renderCandidates() {
               ${barHtml(sc)}
               <div style="font-size:11px;color:var(--muted);margin-top:4px;">${note}</div>
             </div>`).join("")}
+        </div>
+
+        <div class="skills-row">
+          <div class="skills-label">Industry Experience (from CV)</div>
+          <div style="margin-bottom:8px;">${industryChipsHtml}</div>
+          ${currentRole.requiredIndustry ? `<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">★ Required industry &nbsp;·&nbsp; ✦ Nice-to-have industry</div>` : ""}
         </div>
 
         <div class="skills-row">
@@ -1041,15 +1518,486 @@ function showCandidates() {
   document.getElementById("nav-demand").classList.remove("active");
 }
 
+// ─── Excel Export ─────────────────────────────────────────────────────────────
+
+function buildSheetStyles(ws) {
+  // Column widths helper
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  const widths = [];
+  for (let C = range.s.c; C <= range.e.c; C++) {
+    let max = 10;
+    for (let R = range.s.r; R <= range.e.r; R++) {
+      const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+      if (cell && cell.v != null) max = Math.max(max, String(cell.v).length + 2);
+    }
+    widths.push({ wch: Math.min(max, 60) });
+  }
+  ws['!cols'] = widths;
+  return ws;
+}
+
+function exportToExcel() {
+  const wb = XLSX.utils.book_new();
+  wb.Props = { Title: "Resource Utilization Report", Author: "IBM Consulting" };
+
+  // ── Sheet 1: Demand Summary ──────────────────────────────────────────────────
+  const demandRows = roles.map(r => {
+    const rankings = rankForRole(r);
+    const top = rankings[0];
+    const matchCount = rankings.filter(x => x.overallScore >= 50).length;
+    return {
+      "Seat ID":            r.seatId,
+      "Role Title":         r.roleTitle,
+      "Client":             r.client,
+      "Project":            r.projectName,
+      "Dept":               r.dept,
+      "Manager":            r.manager,
+      "Quarter":            r.quarter,
+      "JRS":                r.jrs,
+      "Band Min":           r.bandMin,
+      "Band Max":           r.bandMax,
+      "Start Date":         r.startDate,
+      "End Date":           r.endDate || "",
+      "Weekly Hours":       r.weeklyHours,
+      "Location":           r.location,
+      "Travel Required":    r.travelRequired ? "Yes" : "No",
+      "Contract Signed":    r.contractSigned ? "Yes" : "No",
+      "Required Industry":  r.requiredIndustry || "",
+      "Nice-to-Have Industries": (r.niceToHaveIndustries || []).join(", "),
+      "Required Skills":    r.requiredSkills.join(", "),
+      "Nice-to-Have Skills":r.niceToHaveSkills.join(", "),
+      "Required Certs":     r.certifications.join(", "),
+      "Top Match Score":    top ? top.overallScore : "",
+      "Top Candidate":      top ? top.consultant.name : "",
+      "Candidates ≥50":     matchCount,
+      "Status":             r.status,
+    };
+  });
+  const wsDemand = buildSheetStyles(XLSX.utils.json_to_sheet(demandRows));
+  wsDemand['!freeze'] = { xSplit: 0, ySplit: 1 };
+  XLSX.utils.book_append_sheet(wb, wsDemand, "Demand Summary");
+
+  // ── Sheet 2: Candidate Matches (all roles × all consultants) ────────────────
+  const matchRows = [];
+  roles.forEach(r => {
+    const rankings = rankForRole(r);
+    rankings.forEach(res => {
+      const c = res.consultant;
+      const d = res.dimensions;
+      matchRows.push({
+        "Role":                 r.roleTitle,
+        "Client":               r.client,
+        "Project":              r.projectName,
+        "Seat ID":              r.seatId,
+        "Quarter":              r.quarter,
+        "Start Date":           r.startDate,
+        "Rank":                 res.rank,
+        "Consultant Name":      c.name,
+        "Consultant ID":        c.id,
+        "Band":                 c.band,
+        "JRS":                  c.jrs,
+        "Dept":                 c.dept,
+        "Manager":              c.manager,
+        "Location":             c.location,
+        "Availability Date":    c.availabilityDate,
+        "Assignment Status":    c.assignmentStatus,
+        "Travel Willing":       c.travelWillingness ? "Yes" : "No",
+        "Overall Score":        res.overallScore,
+        "Skills Score":         d.skills.score,
+        "Skills Match":         `${d.skills.reqMatched}/${d.skills.reqTotal}`,
+        "Missing Skills":       d.skills.missingRequired.join(", "),
+        "Band Score":           d.band.score,
+        "Band Note":            d.band.note,
+        "Availability Score":   d.availability.score,
+        "Availability Note":    d.availability.note,
+        "Location Score":       d.location.score,
+        "Location Note":        d.location.note,
+        "JRS Score":            d.jrs.score,
+        "JRS Note":             d.jrs.note,
+        "Cert Score":           d.certifications.score,
+        "Missing Certs":        d.certifications.missing.join(", "),
+        "Industry Score":       d.industry.score,
+        "Industry Note":        d.industry.note,
+        "CV Exists":            c.cvExists ? "Yes" : "No",
+        "CV Age (months)":      c.cvRecencyMonths ?? "N/A",
+        "Risk Count":           res.risks.length,
+        "Risks":                res.risks.map(x => `${x.type} (${x.severity})`).join("; "),
+        "AI Narrative":         res.narrative,
+      });
+    });
+  });
+  const wsMatches = buildSheetStyles(XLSX.utils.json_to_sheet(matchRows));
+  XLSX.utils.book_append_sheet(wb, wsMatches, "Candidate Matches");
+
+  // ── Sheet 3: Consultant Roster ───────────────────────────────────────────────
+  const rosterRows = consultants.map(c => ({
+    "Consultant ID":        c.id,
+    "Name":                 c.name,
+    "Band":                 c.band,
+    "JRS":                  c.jrs,
+    "Dept":                 c.dept,
+    "Manager":              c.manager,
+    "Location":             c.location,
+    "Availability Date":    c.availabilityDate,
+    "Assignment Status":    c.assignmentStatus,
+    "On Bench":             c.benchStatus ? "Yes" : "No",
+    "Travel Willing":       c.travelWillingness ? "Yes" : "No",
+    "Skills":               c.skills.join(", "),
+    "Certifications":       c.certifications.join(", "),
+    "Industries (from CV)": c.industries.join(", "),
+    "CV Exists":            c.cvExists ? "Yes" : "No",
+    "CV Age (months)":      c.cvRecencyMonths ?? "N/A",
+  }));
+  const wsRoster = buildSheetStyles(XLSX.utils.json_to_sheet(rosterRows));
+  XLSX.utils.book_append_sheet(wb, wsRoster, "Consultant Roster");
+
+  const ts = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `Resource_Utilization_Report_${ts}.xlsx`);
+}
+
+function exportRoleToExcel() {
+  if (!currentRole) return;
+  const wb = XLSX.utils.book_new();
+
+  // ── Sheet 1: Role Summary ────────────────────────────────────────────────────
+  const r = currentRole;
+  const roleSummaryRows = [{
+    "Seat ID":            r.seatId,
+    "Role Title":         r.roleTitle,
+    "Client":             r.client,
+    "Project":            r.projectName,
+    "Dept":               r.dept,
+    "Manager":            r.manager,
+    "Quarter":            r.quarter,
+    "JRS":                r.jrs,
+    "Band Min":           r.bandMin,
+    "Band Max":           r.bandMax,
+    "Start Date":         r.startDate,
+    "End Date":           r.endDate || "",
+    "Weekly Hours":       r.weeklyHours,
+    "Location":           r.location,
+    "Travel Required":    r.travelRequired ? "Yes" : "No",
+    "Contract Signed":    r.contractSigned ? "Yes" : "No",
+    "Required Industry":  r.requiredIndustry || "",
+    "Required Skills":    r.requiredSkills.join(", "),
+    "Required Certs":     r.certifications.join(", "),
+  }];
+  XLSX.utils.book_append_sheet(wb, buildSheetStyles(XLSX.utils.json_to_sheet(roleSummaryRows)), "Role Summary");
+
+  // ── Sheet 2: Ranked Candidates ───────────────────────────────────────────────
+  const candRows = currentRankings.map(res => {
+    const c = res.consultant;
+    const d = res.dimensions;
+    return {
+      "Rank":                 res.rank,
+      "Consultant Name":      c.name,
+      "Consultant ID":        c.id,
+      "Band":                 c.band,
+      "JRS":                  c.jrs,
+      "Dept":                 c.dept,
+      "Manager":              c.manager,
+      "Location":             c.location,
+      "Availability Date":    c.availabilityDate,
+      "Assignment Status":    c.assignmentStatus,
+      "Travel Willing":       c.travelWillingness ? "Yes" : "No",
+      "Overall Score":        res.overallScore,
+      "Skills Score":         d.skills.score,
+      "Skills Match":         `${d.skills.reqMatched}/${d.skills.reqTotal}`,
+      "Missing Skills":       d.skills.missingRequired.join(", "),
+      "Band Score":           d.band.score,
+      "Availability Score":   d.availability.score,
+      "Location Score":       d.location.score,
+      "JRS Score":            d.jrs.score,
+      "Cert Score":           d.certifications.score,
+      "Missing Certs":        d.certifications.missing.join(", "),
+      "Industry Score":       d.industry.score,
+      "Industry Note":        d.industry.note,
+      "Industries (CV)":      c.industries.join(", "),
+      "CV Exists":            c.cvExists ? "Yes" : "No",
+      "CV Age (months)":      c.cvRecencyMonths ?? "N/A",
+      "Risks":                res.risks.map(x => `${x.type} (${x.severity})`).join("; "),
+      "AI Narrative":         res.narrative,
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, buildSheetStyles(XLSX.utils.json_to_sheet(candRows)), "Ranked Candidates");
+
+  const safeName = r.projectName.replace(/[^a-z0-9]/gi, "_");
+  const ts = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `${safeName}_Candidates_${ts}.xlsx`);
+}
+
+// ─── Upload / Source Data ─────────────────────────────────────────────────────
+
+const _pendingData = { consultants: null, roles: null };
+
+function parseBool(v) {
+  if (v == null) return false;
+  if (typeof v === "boolean") return v;
+  return ["true","yes","1","y"].includes(String(v).toLowerCase().trim());
+}
+function parseList(v) {
+  if (!v) return [];
+  return String(v).split(",").map(s => s.trim()).filter(Boolean);
+}
+function parseDateSerial(v) {
+  // SheetJS returns Excel date serials as numbers
+  if (typeof v === "number") {
+    const d = XLSX.SSF.parse_date_code(v);
+    if (d) return `${d.y}-${String(d.m).padStart(2,"0")}-${String(d.d).padStart(2,"0")}`;
+  }
+  return v ? String(v).trim() : "";
+}
+
+function sheetToRows(wb, sheetIndex = 0) {
+  const sheetName = wb.SheetNames[sheetIndex];
+  return XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: "" });
+}
+
+function parseConsultantRows(rows) {
+  const required = ["name","band","jrs","availabilityDate","location","skills"];
+  const missing = required.filter(k => !Object.keys(rows[0] || {}).includes(k));
+  if (missing.length) throw new Error(`Missing required columns: ${missing.join(", ")}`);
+  return rows.map((r, i) => ({
+    id:               r.id || `U${String(i+1).padStart(3,"0")}`,
+    name:             String(r.name || "").trim(),
+    band:             parseInt(r.band) || 7,
+    jrs:              String(r.jrs || "").trim(),
+    dept:             String(r.dept || "").trim(),
+    manager:          String(r.manager || "").trim(),
+    skills:           parseList(r.skills),
+    certifications:   parseList(r.certifications),
+    industries:       parseList(r.industries),
+    cvExists:         r.cvExists !== "" ? parseBool(r.cvExists) : true,
+    cvRecencyMonths:  r.cvRecencyMonths !== "" ? parseInt(r.cvRecencyMonths) : null,
+    availabilityDate: parseDateSerial(r.availabilityDate),
+    location:         String(r.location || "").trim(),
+    travelWillingness: parseBool(r.travelWillingness),
+    assignmentStatus: String(r.assignmentStatus || "Bench").trim(),
+    benchStatus:      r.benchStatus !== "" ? parseBool(r.benchStatus) : (String(r.assignmentStatus||"").toLowerCase()==="bench"),
+  })).filter(c => c.name);
+}
+
+function parseRoleRows(rows) {
+  const required = ["roleTitle","client","projectName","jrs","bandMin","bandMax","requiredSkills","startDate","location"];
+  const missing = required.filter(k => !Object.keys(rows[0] || {}).includes(k));
+  if (missing.length) throw new Error(`Missing required columns: ${missing.join(", ")}`);
+  return rows.map((r, i) => ({
+    id:                   r.id || `R${String(i+1).padStart(3,"0")}`,
+    seatId:               String(r.seatId || `TR-U${String(i+1).padStart(4,"0")}`).trim(),
+    client:               String(r.client || "").trim(),
+    projectName:          String(r.projectName || "").trim(),
+    dept:                 String(r.dept || "").trim(),
+    manager:              String(r.manager || "").trim(),
+    quarter:              String(r.quarter || "").trim(),
+    roleTitle:            String(r.roleTitle || "").trim(),
+    jrs:                  String(r.jrs || "").trim(),
+    bandMin:              parseInt(r.bandMin) || 6,
+    bandMax:              parseInt(r.bandMax) || 9,
+    requiredSkills:       parseList(r.requiredSkills),
+    niceToHaveSkills:     parseList(r.niceToHaveSkills),
+    certifications:       parseList(r.certifications),
+    requiredIndustry:     String(r.requiredIndustry || "").trim(),
+    niceToHaveIndustries: parseList(r.niceToHaveIndustries),
+    startDate:            parseDateSerial(r.startDate),
+    endDate:              parseDateSerial(r.endDate),
+    weeklyHours:          parseInt(r.weeklyHours) || 40,
+    location:             String(r.location || "").trim(),
+    travelRequired:       parseBool(r.travelRequired),
+    contractSigned:       parseBool(r.contractSigned),
+    status:               String(r.status || "Open").trim(),
+  })).filter(r => r.roleTitle);
+}
+
+function readFileAsArrayBuffer(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = e => res(e.target.result);
+    reader.onerror = () => rej(new Error("File read failed"));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function handleFileSelect(event, type) {
+  const file = event.target.files[0];
+  if (!file) return;
+  await processUploadFile(file, type);
+}
+
+async function processUploadFile(file, type) {
+  const statusEl = document.getElementById(`status-${type}`);
+  const dzEl = document.getElementById(`dz-${type}`);
+  statusEl.className = "file-status info";
+  statusEl.textContent = `Reading ${file.name}…`;
+
+  try {
+    const buf = await readFileAsArrayBuffer(file);
+    const wb = XLSX.read(buf, { type: "array", cellDates: false });
+    const rows = sheetToRows(wb);
+    if (!rows.length) throw new Error("File appears to be empty");
+
+    let parsed;
+    if (type === "consultants") {
+      parsed = parseConsultantRows(rows);
+      _pendingData.consultants = parsed;
+      statusEl.className = "file-status success";
+      statusEl.textContent = `✓ ${file.name} — ${parsed.length} consultant records loaded`;
+    } else {
+      parsed = parseRoleRows(rows);
+      _pendingData.roles = parsed;
+      statusEl.className = "file-status success";
+      statusEl.textContent = `✓ ${file.name} — ${parsed.length} role records loaded`;
+    }
+  } catch (err) {
+    statusEl.className = "file-status error";
+    statusEl.textContent = `✗ ${err.message}`;
+    _pendingData[type] = null;
+  }
+
+  updateApplyButton();
+}
+
+function updateApplyButton() {
+  const canApply = _pendingData.consultants !== null || _pendingData.roles !== null;
+  document.getElementById("btn-apply-upload").disabled = !canApply;
+  const parts = [];
+  if (_pendingData.consultants) parts.push(`${_pendingData.consultants.length} consultants`);
+  if (_pendingData.roles) parts.push(`${_pendingData.roles.length} roles`);
+  document.getElementById("upload-global-status").textContent = parts.length
+    ? `Ready to apply: ${parts.join(" · ")}`
+    : "";
+}
+
+function persistToStorage() {
+  try {
+    localStorage.setItem("ruo_consultants", JSON.stringify(consultants));
+    localStorage.setItem("ruo_roles", JSON.stringify(roles));
+  } catch (e) { /* storage full or unavailable — fail silently */ }
+}
+
+function clearPersistedData() {
+  localStorage.removeItem("ruo_consultants");
+  localStorage.removeItem("ruo_roles");
+}
+
+function loadFromStorage() {
+  try {
+    const c = localStorage.getItem("ruo_consultants");
+    const r = localStorage.getItem("ruo_roles");
+    if (c) { const parsed = JSON.parse(c); if (parsed.length) { consultants.length = 0; parsed.forEach(x => consultants.push(x)); } }
+    if (r) { const parsed = JSON.parse(r); if (parsed.length) { roles.length = 0; parsed.forEach(x => roles.push(x)); } }
+    return !!(c || r);
+  } catch (e) { return false; }
+}
+
+function applyUploadedData() {
+  if (_pendingData.consultants) {
+    consultants.length = 0;
+    _pendingData.consultants.forEach(c => consultants.push(c));
+  }
+  if (_pendingData.roles) {
+    roles.length = 0;
+    _pendingData.roles.forEach(r => roles.push(r));
+  }
+
+  // Persist to localStorage so data survives page refresh
+  persistToStorage();
+
+  // Reset state
+  currentRole = null;
+  currentRankings = [];
+  _pendingData.consultants = null;
+  _pendingData.roles = null;
+
+  // Refresh entire UI
+  initStats();
+  renderRoleTable();
+  showDemand();
+  closeUploadModal();
+  updateDataSourceBadge();
+
+  // Show banner
+  const banner = document.createElement("div");
+  banner.style.cssText = "position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#198038;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,.2);";
+  banner.textContent = "✓ Data saved — will persist across page refreshes";
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 3500);
+}
+
+function resetToSampleData() {
+  if (!confirm("This will remove your uploaded data and restore the built-in sample data. Continue?")) return;
+  clearPersistedData();
+  location.reload();
+}
+
+function updateDataSourceBadge() {
+  const hasSaved = !!(localStorage.getItem("ruo_consultants") || localStorage.getItem("ruo_roles"));
+  const badge = document.getElementById("data-source-badge");
+  if (!badge) return;
+  if (hasSaved) {
+    badge.textContent = "Uploaded Data";
+    badge.style.background = "#198038";
+    badge.style.borderColor = "#0e5a25";
+    document.getElementById("sidebar-reset-btn").style.display = "flex";
+  } else {
+    badge.textContent = "Sample Data";
+    badge.style.background = "#1a3a6b";
+    badge.style.borderColor = "#2a5abf";
+    document.getElementById("sidebar-reset-btn").style.display = "none";
+  }
+}
+
+// ── Modal controls ──
+function openUploadModal() {
+  document.getElementById("upload-modal").classList.add("open");
+}
+function closeUploadModal() {
+  document.getElementById("upload-modal").classList.remove("open");
+}
+function handleModalOverlayClick(e) {
+  if (e.target === document.getElementById("upload-modal")) closeUploadModal();
+}
+function switchUploadTab(tab) {
+  ["consultants","roles"].forEach(t => {
+    document.getElementById(`tab-btn-${t}`).classList.toggle("active", t === tab);
+    document.getElementById(`tab-${t}`).classList.toggle("active", t === tab);
+  });
+}
+
+// ── Drag & drop ──
+function dzDragOver(e, id) {
+  e.preventDefault();
+  document.getElementById(id).classList.add("drag-over");
+}
+function dzDragLeave(e, id) {
+  document.getElementById(id).classList.remove("drag-over");
+}
+async function dzDrop(e, type) {
+  e.preventDefault();
+  const id = `dz-${type}`;
+  document.getElementById(id).classList.remove("drag-over");
+  const file = e.dataTransfer.files[0];
+  if (file) await processUploadFile(file, type);
+}
+
 // ─── Filter helpers ───────────────────────────────────────────────────────────
 
 function applyFilters() { renderRoleTable(); }
+
+function clearSidebarFilters() {
+  ["sf-dept","sf-manager","sf-band","sf-project","sf-quarter","sf-jrs","sf-score","sf-travel","sf-industry"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = el.tagName === "SELECT" && el.options[0] ? el.options[0].value : "";
+  });
+  renderRoleTable();
+}
 
 function clearCandFilters() {
   document.getElementById("cf-score").value = "0";
   document.getElementById("cf-band").value = "";
   document.getElementById("cf-avail").value = "";
   document.getElementById("cf-travel").value = "";
+  document.getElementById("cf-avail-from").value = "";
+  document.getElementById("cf-avail-to").value = "";
   renderCandidates();
 }
 
@@ -1061,10 +2009,26 @@ window.showDemand = showDemand;
 window.renderRoleTable = renderRoleTable;
 window.renderCandidates = renderCandidates;
 window.applyFilters = applyFilters;
+window.clearSidebarFilters = clearSidebarFilters;
 window.clearCandFilters = clearCandFilters;
+window.exportToExcel = exportToExcel;
+window.exportRoleToExcel = exportRoleToExcel;
+window.openUploadModal = openUploadModal;
+window.closeUploadModal = closeUploadModal;
+window.handleModalOverlayClick = handleModalOverlayClick;
+window.switchUploadTab = switchUploadTab;
+window.handleFileSelect = handleFileSelect;
+window.applyUploadedData = applyUploadedData;
+window.dzDragOver = dzDragOver;
+window.dzDragLeave = dzDragLeave;
+window.dzDrop = dzDrop;
+
+// Load persisted data before first render (replaces sample data if saved data exists)
+const _hadSavedData = loadFromStorage();
 
 initStats();
 renderRoleTable();
+updateDataSourceBadge();
 </script>
 
 </body>
