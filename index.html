@@ -417,6 +417,61 @@
     /* ── Views ── */
     #view-demand { display: block; }
     #view-candidates { display: none; }
+    #view-utilization { display: none; }
+
+    /* ── Utilization Dashboard ── */
+    .util-stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .util-bar-wrap { display:flex; align-items:center; gap:8px; margin-top:6px; }
+    .util-bar-outer {
+      flex:1; height:10px; background:var(--border); border-radius:5px; overflow:hidden;
+    }
+    .util-bar-inner { height:100%; border-radius:5px; transition:width .4s ease; }
+    .util-pct { font-size:12px; font-weight:700; width:36px; text-align:right; }
+
+    .util-status-badge {
+      display:inline-block; padding:2px 9px; border-radius:10px;
+      font-size:11px; font-weight:700; white-space:nowrap;
+    }
+    .util-over    { background:#fff1f1; color:var(--red); }
+    .util-full    { background:#defbe6; color:var(--green); }
+    .util-partial { background:#fef3c7; color:var(--yellow); }
+    .util-bench   { background:var(--border); color:var(--muted); }
+
+    .rebal-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); margin-bottom:10px;
+    }
+    .rebal-card-header {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 16px; cursor:pointer;
+    }
+    .rebal-card-header:hover { background:var(--bg); }
+    .rebal-card-body { padding:0 16px 14px; display:none; }
+    .rebal-card-body.open { display:block; }
+
+    .rebal-action {
+      display:flex; align-items:flex-start; gap:10px;
+      padding:10px 12px; border-radius:6px; margin-bottom:8px;
+      border:1px solid var(--border); background:var(--bg); font-size:12px;
+    }
+    .rebal-action-high   { border-color:#fecaca; background:var(--red-light); }
+    .rebal-action-medium { border-color:#fde68a; background:var(--yellow-light); }
+    .rebal-action-low    { border-color:#a6f4c5; background:var(--green-light); }
+    .rebal-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+    .rebal-title { font-weight:700; font-size:12px; margin-bottom:2px; }
+    .rebal-detail { color:var(--muted); }
+
+    .alloc-chip {
+      display:inline-block; padding:3px 9px; border-radius:5px;
+      font-size:11px; border:1px solid var(--border);
+      background:var(--bg); margin:2px; vertical-align:middle;
+    }
+    .alloc-chip-over { background:var(--red-light); border-color:#fecaca; color:var(--red); }
 
     /* ── Empty state ── */
     .empty-state {
@@ -632,6 +687,72 @@
     .upload-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
     .upload-tab-panel { display: none; }
     .upload-tab-panel.active { display: block; }
+
+    /* ── Column Mapping Modal ── */
+    .mapping-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+    }
+    .mapping-modal-overlay.open { display: flex; }
+    .mapping-modal-box {
+      background: var(--surface);
+      border-radius: 10px;
+      width: 720px;
+      max-width: 96vw;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.28);
+      display: flex;
+      flex-direction: column;
+    }
+    .mapping-header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .mapping-header h2 { font-size: 16px; font-weight: 700; }
+    .mapping-header p { font-size: 12px; color: var(--muted); margin-top: 3px; max-width: 560px; }
+    .mapping-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .mapping-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .mapping-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    .mapping-table th {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--muted); padding: 8px 12px;
+      border-bottom: 2px solid var(--border); text-align: left; background: var(--bg);
+    }
+    .mapping-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+    .mapping-table tr:last-child td { border-bottom: none; }
+    .mapping-table tr.row-required td:first-child::after { content: " *"; color: var(--red); font-weight: 700; }
+    .mapping-conf-high { color: var(--green); font-weight: 600; font-size: 11px; }
+    .mapping-conf-med  { color: var(--yellow); font-weight: 600; font-size: 11px; }
+    .mapping-conf-low  { color: var(--red); font-weight: 600; font-size: 11px; }
+    .mapping-select {
+      border: 1px solid var(--border); border-radius: 5px; padding: 4px 7px;
+      font-size: 12px; color: var(--text); background: var(--surface); min-width: 180px;
+    }
+    .mapping-select.unresolved { border-color: var(--red); background: var(--red-light); }
+    .mapping-alert {
+      background: var(--yellow-light); border: 1px solid #fde68a; border-radius: 6px;
+      padding: 10px 14px; font-size: 12px; color: var(--yellow); margin-bottom: 16px;
+      display: none;
+    }
+    .mapping-alert.visible { display: block; }
+    .mapping-legend { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
   </style>
 </head>
 <body>
@@ -671,7 +792,7 @@
       <!-- Tabs -->
       <div class="upload-tabs">
         <div class="upload-tab active" id="tab-btn-consultants" onclick="switchUploadTab('consultants')">Consultant Roster</div>
-        <div class="upload-tab" id="tab-btn-roles" onclick="switchUploadTab('roles')">Project Demand</div>
+        <div class="upload-tab" id="tab-btn-roles">Project Demand</div>
       </div>
 
       <!-- ── Consultants Tab ── -->
@@ -693,9 +814,12 @@
             <tr><td class="col-opt">industries</td><td>text</td><td>Comma-separated (CV industries)</td></tr>
             <tr><td class="col-opt">travelWillingness</td><td>yes/no</td><td>true/false or yes/no</td></tr>
             <tr><td class="col-opt">assignmentStatus</td><td>text</td><td>Bench / Active / Project Ending</td></tr>
+            <tr><td class="col-opt">utilizationPercentage</td><td>number</td><td>Current utilization, e.g. 75 or 75%</td></tr>
             <tr><td class="col-opt">benchStatus</td><td>yes/no</td><td></td></tr>
             <tr><td class="col-opt">cvExists</td><td>yes/no</td><td></td></tr>
             <tr><td class="col-opt">cvRecencyMonths</td><td>number</td><td></td></tr>
+            <tr><td class="col-opt">weeklyCapacity</td><td>number</td><td>Defaults to 40. Total hrs/week available.</td></tr>
+            <tr><td class="col-opt">currentAllocations</td><td>JSON</td><td>Array of active assignments — see format below</td></tr>
           </table>
           <div style="margin-top:8px;font-size:11px;color:var(--red);font-weight:600;">Red = required &nbsp;·&nbsp; <span style="color:var(--muted);font-weight:400;">Gray = optional</span></div>
         </div>
@@ -764,7 +888,7 @@
                ondragover="dzDragOver(event,'dz-roles')"
                ondragleave="dzDragLeave(event,'dz-roles')"
                ondrop="dzDrop(event,'roles')">
-            <input type="file" id="file-roles" accept=".xlsx,.csv" onchange="handleFileSelect(event,'roles')" />
+            <input type="file" id="file-roles" accept=".xlsx,.csv" />
             <div class="drop-zone-icon">📁</div>
             <div class="drop-zone-label">Drop file here or click to browse</div>
             <div class="drop-zone-sub">Accepts .xlsx or .csv · First row must be column headers</div>
@@ -786,6 +910,46 @@
   </div>
 </div>
 
+<!-- ═══ COLUMN MAPPING MODAL ═══ -->
+<div class="mapping-modal-overlay" id="mapping-modal">
+  <div class="mapping-modal-box">
+    <div class="mapping-header">
+      <div>
+        <h2>Column Mapping Agent</h2>
+        <p id="mapping-subtitle">The uploaded file's column headers don't all match the expected names. Review and confirm the mappings below before applying.</p>
+      </div>
+      <button class="modal-close" onclick="closeMappingModal()">×</button>
+    </div>
+    <div class="mapping-body">
+      <div class="mapping-legend">
+        <span class="mapping-conf-high">● High confidence</span> &nbsp;·&nbsp;
+        <span class="mapping-conf-med">● Medium confidence</span> &nbsp;·&nbsp;
+        <span class="mapping-conf-low">● Low / undetected</span> &nbsp;·&nbsp;
+        <strong>*</strong> = required field
+      </div>
+      <div class="mapping-alert" id="mapping-alert">
+        Some required fields are still unmapped. Please select a source column for each field marked <strong>*</strong> before continuing, or choose <em>(skip / leave blank)</em> for optional fields.
+      </div>
+      <table class="mapping-table" id="mapping-table">
+        <thead>
+          <tr>
+            <th>Expected Field</th>
+            <th>Detected Source Column</th>
+            <th>Confidence</th>
+            <th>Sample Value</th>
+          </tr>
+        </thead>
+        <tbody id="mapping-table-body"></tbody>
+      </table>
+    </div>
+    <div class="mapping-footer">
+      <div style="flex:1;font-size:12px;color:var(--muted);align-self:center;" id="mapping-footer-note"></div>
+      <button class="btn-cancel-modal" onclick="closeMappingModal()">Cancel</button>
+      <button class="btn-apply" id="btn-confirm-mapping" onclick="confirmMapping()">Apply Mapping</button>
+    </div>
+  </div>
+</div>
+
 <div class="layout">
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -794,6 +958,11 @@
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1zm1 3v7h10V5H3zm1 2h2v2H4V7zm4 0h4v1H8V7zm0 3h4v1H8v-1z"/></svg>
       Open Roles
       <span class="sidebar-count" id="sidebar-role-count">0</span>
+    </div>
+    <div class="sidebar-item" id="nav-utilization" onclick="showUtilization()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1 11h3v4H1v-4zm4-4h3v8H5V7zm4-3h3v11H9V4zm4-3h2v14h-2V1z"/></svg>
+      Utilization
+      <span class="sidebar-count" id="sidebar-util-count">0</span>
     </div>
     <div class="sidebar-item" onclick="openUploadModal()">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L3.5 6H6v5h4V6h2.5L8 1zM2 13h12v1.5H2V13z"/></svg>
@@ -1043,6 +1212,96 @@
       <div id="candidate-list" class="candidate-panel visible"></div>
     </div>
 
+    <!-- ═══ UTILIZATION DASHBOARD VIEW ═══ -->
+    <div id="view-utilization">
+      <div class="page-header">
+        <div>
+          <h1>Utilization Dashboard</h1>
+          <p>Current allocation load across all consultants. Surfaces overallocated and underutilized team members and recommends rebalancing actions.</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="filter-group" style="gap:6px;">
+            <label style="font-size:12px;font-weight:600;color:var(--muted);">Consultant</label>
+            <input id="uf-name" type="search" placeholder="Search by name" aria-label="Search consultants by name" style="border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;" oninput="renderUtilizationDashboard()" />
+          </div>
+          <div class="filter-group" style="gap:6px;">
+            <label style="font-size:12px;font-weight:600;color:var(--muted);">Dept</label>
+            <select id="uf-dept" style="border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;" onchange="renderUtilizationDashboard()">
+              <option value="">All Depts</option>
+              <option>Cloud &amp; Platform</option>
+              <option>Data &amp; AI</option>
+              <option>Application Modernization</option>
+            </select>
+          </div>
+          <div class="filter-group" style="gap:6px;">
+            <label style="font-size:12px;font-weight:600;color:var(--muted);">Status</label>
+            <select id="uf-status" style="border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;" onchange="renderUtilizationDashboard()">
+              <option value="">All</option>
+              <option value="over">Overallocated</option>
+              <option value="full">Fully Utilized</option>
+              <option value="partial">Underutilized</option>
+              <option value="bench">Bench / Unallocated</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Utilization stat cards -->
+      <div class="util-stat-row">
+        <div class="stat-card">
+          <div class="stat-label">Avg Utilization</div>
+          <div class="stat-value" id="stat-avg-util">—</div>
+          <div class="stat-sub">Across all consultants</div>
+        </div>
+        <div class="stat-card" style="border-left:3px solid var(--red);">
+          <div class="stat-label">Overallocated</div>
+          <div class="stat-value" id="stat-over-count" style="color:var(--red);">—</div>
+          <div class="stat-sub">Above 100% capacity</div>
+        </div>
+        <div class="stat-card" style="border-left:3px solid var(--yellow);">
+          <div class="stat-label">Underutilized</div>
+          <div class="stat-value" id="stat-under-count" style="color:var(--yellow);">—</div>
+          <div class="stat-sub">Below 70% capacity</div>
+        </div>
+        <div class="stat-card" style="border-left:3px solid var(--muted);">
+          <div class="stat-label">On Bench</div>
+          <div class="stat-value" id="stat-bench-count">—</div>
+          <div class="stat-sub">Zero current allocations</div>
+        </div>
+      </div>
+
+      <!-- Rebalancing actions -->
+      <div id="rebal-section" style="margin-bottom:24px;display:none;">
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+          Rebalancing Recommendations
+          <span id="rebal-action-count" class="badge badge-red"></span>
+        </div>
+        <div id="rebal-list"></div>
+      </div>
+
+      <!-- Consultant roster with utilization -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Consultant Load</span>
+          <span style="font-size:12px;color:var(--muted);">Click a row to expand current allocations</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Consultant</th>
+              <th>Dept / Manager</th>
+              <th>Current Allocations</th>
+              <th>Open Role Matches</th>
+              <th style="min-width:180px;">Utilization</th>
+              <th>Free Capacity</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="util-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -1050,16 +1309,16 @@
 // ─── Data ───────────────────────────────────────────────────────────────────
 
 const consultants = [
-  { id:"C001", name:"Arjun Mehta", band:8, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["AWS","Kubernetes","Terraform","Python","Solution Architecture","DevOps"], certifications:["AWS Solutions Architect Professional","CKA"], cvExists:true, cvRecencyMonths:2, availabilityDate:"2026-09-01", location:"Austin, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Telecommunications","Public Sector"] },
-  { id:"C002", name:"Maria Santos", band:7, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","Spark","SQL","Databricks","Azure","ETL","Data Pipelines"], certifications:["Azure Data Engineer Associate"], cvExists:true, cvRecencyMonths:5, availabilityDate:"2026-09-15", location:"Chicago, IL", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Healthcare","Life Sciences","Insurance"] },
-  { id:"C003", name:"Devon Clarke", band:6, jrs:"Application Developer", dept:"Application Modernization", manager:"Rachel Kim", skills:["React","Node.js","TypeScript","REST APIs","PostgreSQL"], certifications:[], cvExists:true, cvRecencyMonths:14, availabilityDate:"2026-10-01", location:"Atlanta, GA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false, industries:["K-12 Education","Higher Education","Non-Profit"] },
-  { id:"C004", name:"Priya Nair", band:9, jrs:"AI/ML Specialist", dept:"Data & AI", manager:"James Okafor", skills:["Python","TensorFlow","PyTorch","NLP","LLMs","MLOps","AWS"], certifications:["AWS Machine Learning Specialty","Google Cloud Professional ML Engineer"], cvExists:true, cvRecencyMonths:1, availabilityDate:"2026-08-25", location:"San Jose, CA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Technology","Retail","Supply Chain & Logistics"] },
-  { id:"C005", name:"James Whitfield", band:7, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["AWS","Azure","Terraform","Solution Architecture","Security"], certifications:["AWS Solutions Architect Associate"], cvExists:false, cvRecencyMonths:null, availabilityDate:"2026-09-05", location:"Dallas, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Energy & Utilities","Oil & Gas"] },
-  { id:"C006", name:"Yuki Tanaka", band:8, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","Spark","Databricks","Snowflake","dbt","SQL","Kafka","Azure"], certifications:["Azure Data Engineer Associate","Databricks Certified Associate"], cvExists:true, cvRecencyMonths:3, availabilityDate:"2026-09-10", location:"Seattle, WA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Retail","Technology","Healthcare"] },
-  { id:"C007", name:"Fatima Al-Rashid", band:6, jrs:"Application Developer", dept:"Application Modernization", manager:"Rachel Kim", skills:["Java","Spring Boot","Kubernetes","REST APIs","PostgreSQL","Docker"], certifications:["CKA"], cvExists:true, cvRecencyMonths:7, availabilityDate:"2026-09-20", location:"New York, NY", travelWillingness:false, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Insurance","Public Sector"] },
-  { id:"C008", name:"Carlos Rivera", band:7, jrs:"AI/ML Specialist", dept:"Data & AI", manager:"James Okafor", skills:["Python","scikit-learn","TensorFlow","NLP","Data Analysis","SQL"], certifications:[], cvExists:true, cvRecencyMonths:20, availabilityDate:"2026-11-01", location:"Miami, FL", travelWillingness:true, assignmentStatus:"Active", benchStatus:false, industries:["Supply Chain & Logistics","Retail","Manufacturing"] },
-  { id:"C009", name:"Amara Osei", band:8, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["GCP","Kubernetes","Terraform","Python","Solution Architecture","Security","Networking"], certifications:["GCP Professional Cloud Architect","CKA"], cvExists:true, cvRecencyMonths:4, availabilityDate:"2026-09-01", location:"Washington, DC", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Public Sector","Defense","Telecommunications"] },
-  { id:"C010", name:"Lisa Chen", band:7, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","SQL","Databricks","Azure","Power BI"], certifications:[], cvExists:true, cvRecencyMonths:9, availabilityDate:"2026-10-15", location:"Boston, MA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false, industries:["Healthcare","Life Sciences","Higher Education"] },
+  { id:"C001", name:"Arjun Mehta", band:8, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["AWS","Kubernetes","Terraform","Python","Solution Architecture","DevOps"], certifications:["AWS Solutions Architect Professional","CKA"], cvExists:true, cvRecencyMonths:2, availabilityDate:"2026-09-01", location:"Austin, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Telecommunications","Public Sector"], weeklyCapacity:40, currentAllocations:[] },
+  { id:"C002", name:"Maria Santos", band:7, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","Spark","SQL","Databricks","Azure","ETL","Data Pipelines"], certifications:["Azure Data Engineer Associate"], cvExists:true, cvRecencyMonths:5, availabilityDate:"2026-09-15", location:"Chicago, IL", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Healthcare","Life Sciences","Insurance"], weeklyCapacity:40, currentAllocations:[] },
+  { id:"C003", name:"Devon Clarke", band:6, jrs:"Application Developer", dept:"Application Modernization", manager:"Rachel Kim", skills:["React","Node.js","TypeScript","REST APIs","PostgreSQL"], certifications:[], cvExists:true, cvRecencyMonths:14, availabilityDate:"2026-10-01", location:"Atlanta, GA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false, industries:["K-12 Education","Higher Education","Non-Profit"], weeklyCapacity:40, currentAllocations:[{ projectName:"Digital Transformation", client:"BlueRidge Energy", weeklyHours:20, startDate:"2026-07-01", endDate:"2026-10-01" }] },
+  { id:"C004", name:"Priya Nair", band:9, jrs:"AI/ML Specialist", dept:"Data & AI", manager:"James Okafor", skills:["Python","TensorFlow","PyTorch","NLP","LLMs","MLOps","AWS"], certifications:["AWS Machine Learning Specialty","Google Cloud Professional ML Engineer"], cvExists:true, cvRecencyMonths:1, availabilityDate:"2026-08-25", location:"San Jose, CA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Technology","Retail","Supply Chain & Logistics"], weeklyCapacity:40, currentAllocations:[{ projectName:"AI Demand Forecasting", client:"Apex Logistics", weeklyHours:40, startDate:"2026-06-01", endDate:"2026-08-25" }, { projectName:"Internal ML Platform", client:"IBM Internal", weeklyHours:10, startDate:"2026-07-01", endDate:"2026-12-31" }] },
+  { id:"C005", name:"James Whitfield", band:7, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["AWS","Azure","Terraform","Solution Architecture","Security"], certifications:["AWS Solutions Architect Associate"], cvExists:false, cvRecencyMonths:null, availabilityDate:"2026-09-05", location:"Dallas, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Energy & Utilities","Oil & Gas"], weeklyCapacity:40, currentAllocations:[] },
+  { id:"C006", name:"Yuki Tanaka", band:8, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","Spark","Databricks","Snowflake","dbt","SQL","Kafka","Azure"], certifications:["Azure Data Engineer Associate","Databricks Certified Associate"], cvExists:true, cvRecencyMonths:3, availabilityDate:"2026-09-10", location:"Seattle, WA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Retail","Technology","Healthcare"], weeklyCapacity:40, currentAllocations:[{ projectName:"Azure Data Warehouse", client:"Paramount Retail", weeklyHours:32, startDate:"2026-07-15", endDate:"2026-09-10" }] },
+  { id:"C007", name:"Fatima Al-Rashid", band:6, jrs:"Application Developer", dept:"Application Modernization", manager:"Rachel Kim", skills:["Java","Spring Boot","Kubernetes","REST APIs","PostgreSQL","Docker"], certifications:["CKA"], cvExists:true, cvRecencyMonths:7, availabilityDate:"2026-09-20", location:"New York, NY", travelWillingness:false, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Insurance","Public Sector"], weeklyCapacity:40, currentAllocations:[{ projectName:"Core Banking API", client:"Meridian Financial Group", weeklyHours:40, startDate:"2026-05-01", endDate:"2026-09-20" }, { projectName:"Security Audit Support", client:"IBM Internal", weeklyHours:8, startDate:"2026-08-01", endDate:"2026-09-30" }] },
+  { id:"C008", name:"Carlos Rivera", band:7, jrs:"AI/ML Specialist", dept:"Data & AI", manager:"James Okafor", skills:["Python","scikit-learn","TensorFlow","NLP","Data Analysis","SQL"], certifications:[], cvExists:true, cvRecencyMonths:20, availabilityDate:"2026-11-01", location:"Miami, FL", travelWillingness:true, assignmentStatus:"Active", benchStatus:false, industries:["Supply Chain & Logistics","Retail","Manufacturing"], weeklyCapacity:40, currentAllocations:[{ projectName:"Demand Analytics Platform", client:"Apex Logistics", weeklyHours:40, startDate:"2026-04-01", endDate:"2026-11-01" }, { projectName:"NLP Research Initiative", client:"IBM Internal", weeklyHours:15, startDate:"2026-06-01", endDate:"2027-01-31" }] },
+  { id:"C009", name:"Amara Osei", band:8, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["GCP","Kubernetes","Terraform","Python","Solution Architecture","Security","Networking"], certifications:["GCP Professional Cloud Architect","CKA"], cvExists:true, cvRecencyMonths:4, availabilityDate:"2026-09-01", location:"Washington, DC", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Public Sector","Defense","Telecommunications"], weeklyCapacity:40, currentAllocations:[] },
+  { id:"C010", name:"Lisa Chen", band:7, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","SQL","Databricks","Azure","Power BI"], certifications:[], cvExists:true, cvRecencyMonths:9, availabilityDate:"2026-10-15", location:"Boston, MA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false, industries:["Healthcare","Life Sciences","Higher Education"], weeklyCapacity:40, currentAllocations:[{ projectName:"Health Data Lake", client:"NovaTech Healthcare", weeklyHours:32, startDate:"2026-05-01", endDate:"2026-10-15" }] },
 ];
 
 const roles = [
@@ -1397,6 +1656,7 @@ function renderCandidates() {
 
   container.innerHTML = filtered.map((result, displayIdx) => {
     const c = result.consultant;
+    const util = calcUtilization(c);
     const dims = result.dimensions;
     const score = result.overallScore;
     const rankClass = result.rank === 1 ? "rank-1" : result.rank === 2 ? "rank-2" : result.rank === 3 ? "rank-3" : "";
@@ -1452,12 +1712,18 @@ function renderCandidates() {
         <div>
           <div class="candidate-name">${c.name}</div>
           <div class="candidate-meta">Band ${c.band} · ${c.jrs} · ${c.location} · Available ${fmtDate(c.availabilityDate)}</div>
-          <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">${statusBadge} ${cvBadge}</div>
+          <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
+            ${statusBadge} ${cvBadge} ${utilStatusBadge(util.status, util.pct)}
+            <span class="badge badge-gray">${util.allocatedHours}h allocated / ${util.capacityHours}h capacity · ${util.freeHours}h free</span>
+          </div>
         </div>
         <div class="candidate-score-big" style="margin-left:auto;">
           <div class="score-big-num" style="color:${scoreCol}">${score}</div>
           <div class="score-big-label">Match Score</div>
         </div>
+        <button class="btn-back" style="margin:0;padding:5px 10px;font-size:11px;white-space:nowrap;"
+          onclick="event.stopPropagation();viewConsultantUtilization('${c.id}')"
+          title="View ${c.name}'s utilization record">📊 Utilization</button>
         <svg id="chevron-${c.id}" width="16" height="16" viewBox="0 0 16 16" fill="var(--muted)" style="margin-left:8px;transform:rotate(0deg);transition:transform .2s;flex-shrink:0"><path d="M4 6l4 4 4-4"/></svg>
       </div>
       <div class="candidate-body" id="body-${c.id}">
@@ -1509,13 +1775,43 @@ function toggleCandidate(id) {
 function showDemand() {
   document.getElementById("view-demand").style.display = "block";
   document.getElementById("view-candidates").style.display = "none";
+  document.getElementById("view-utilization").style.display = "none";
   document.getElementById("nav-demand").classList.add("active");
+  document.getElementById("nav-utilization").classList.remove("active");
 }
 
 function showCandidates() {
   document.getElementById("view-demand").style.display = "none";
   document.getElementById("view-candidates").style.display = "block";
+  document.getElementById("view-utilization").style.display = "none";
   document.getElementById("nav-demand").classList.remove("active");
+  document.getElementById("nav-utilization").classList.remove("active");
+}
+
+function showUtilization() {
+  document.getElementById("view-demand").style.display = "none";
+  document.getElementById("view-candidates").style.display = "none";
+  document.getElementById("view-utilization").style.display = "block";
+  document.getElementById("nav-demand").classList.remove("active");
+  document.getElementById("nav-utilization").classList.add("active");
+  renderUtilizationDashboard();
+}
+
+// Navigate to Utilization Dashboard and pre-filter by a specific consultant's name
+function viewConsultantUtilization(consultantId) {
+  const c = consultants.find(x => x.id === consultantId);
+  if (!c) return;
+  showUtilization();
+  const nameInput = document.getElementById("uf-name");
+  if (nameInput) {
+    nameInput.value = c.name;
+    renderUtilizationDashboard();
+    // Scroll the matching row into view after a brief render delay
+    setTimeout(() => {
+      const row = document.querySelector(`#util-expand-${consultantId}`)?.previousElementSibling;
+      if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
+  }
 }
 
 // ─── Excel Export ─────────────────────────────────────────────────────────────
@@ -1601,6 +1897,7 @@ function exportToExcel() {
         "Location":             c.location,
         "Availability Date":    c.availabilityDate,
         "Assignment Status":    c.assignmentStatus,
+        "Utilization Percentage": calcUtilization(c).pct,
         "Travel Willing":       c.travelWillingness ? "Yes" : "No",
         "Overall Score":        res.overallScore,
         "Skills Score":         d.skills.score,
@@ -1640,6 +1937,7 @@ function exportToExcel() {
     "Location":             c.location,
     "Availability Date":    c.availabilityDate,
     "Assignment Status":    c.assignmentStatus,
+    "Utilization Percentage": calcUtilization(c).pct,
     "On Bench":             c.benchStatus ? "Yes" : "No",
     "Travel Willing":       c.travelWillingness ? "Yes" : "No",
     "Skills":               c.skills.join(", "),
@@ -1699,6 +1997,7 @@ function exportRoleToExcel() {
       "Location":             c.location,
       "Availability Date":    c.availabilityDate,
       "Assignment Status":    c.assignmentStatus,
+      "Utilization Percentage": calcUtilization(c).pct,
       "Travel Willing":       c.travelWillingness ? "Yes" : "No",
       "Overall Score":        res.overallScore,
       "Skills Score":         d.skills.score,
@@ -1724,6 +2023,252 @@ function exportRoleToExcel() {
   const safeName = r.projectName.replace(/[^a-z0-9]/gi, "_");
   const ts = new Date().toISOString().slice(0, 10);
   XLSX.writeFile(wb, `${safeName}_Candidates_${ts}.xlsx`);
+}
+
+// ─── Column Mapping Agent ─────────────────────────────────────────────────────
+
+// Field definitions for both data types.
+// Each entry: { key, label, required, aliases }
+// aliases: common alternate names/phrases people use in spreadsheets
+const CONSULTANT_FIELDS = [
+  { key:"name",             label:"Name",              required:true,  aliases:["full name","consultant name","employee name","staff name","person","resource name","resource"] },
+  { key:"band",             label:"Band",              required:true,  aliases:["grade","level","band level","emp band","employee grade","salary band","job band"] },
+  { key:"jrs",              label:"JRS",               required:true,  aliases:["job role","job role structure","role title","title","position","job title","job function","role"] },
+  { key:"availabilityDate", label:"Availability Date", required:true,  aliases:["available date","avail date","available from","start date","bench date","free date","date available","availability"] },
+  { key:"location",         label:"Location",          required:true,  aliases:["city","city state","base location","office","office location","work location","city/state"] },
+  { key:"skills",           label:"Skills",            required:true,  aliases:["skill set","skill list","technical skills","competencies","expertise","technologies","tech skills"] },
+  { key:"id",               label:"ID",                required:false, aliases:["consultant id","employee id","emp id","staff id","resource id","consultant #","emp #"] },
+  { key:"dept",             label:"Department",        required:false, aliases:["department","division","practice","team","business unit","org","area"] },
+  { key:"manager",          label:"Manager",           required:false, aliases:["reporting manager","direct manager","line manager","supervisor","mgr","people manager"] },
+  { key:"certifications",   label:"Certifications",    required:false, aliases:["certs","certificates","certification list","accreditations","credentials"] },
+  { key:"industries",       label:"Industries",        required:false, aliases:["industry","industry experience","sectors","verticals","cv industries","industry background"] },
+  { key:"travelWillingness",label:"Travel Willingness",required:false, aliases:["travel","willing to travel","travel ok","open to travel","travel flag","travel willing"] },
+  { key:"assignmentStatus", label:"Assignment Status", required:false, aliases:["status","assignment","current status","staffing status","bench status flag","work status"] },
+  { key:"utilizationPercentage",label:"Utilization Percentage",required:false,aliases:["utilization","utilization percent","utilization %","util %","allocated percent","allocation percentage"] },
+  { key:"benchStatus",      label:"Bench Status",      required:false, aliases:["on bench","bench","is bench","bench flag","benched"] },
+  { key:"cvExists",         label:"CV Exists",         required:false, aliases:["cv","resume","has cv","has resume","cv on file","resume exists","cv available"] },
+  { key:"cvRecencyMonths",  label:"CV Age (Months)",   required:false, aliases:["cv age","resume age","cv recency","months since cv","cv months","cv last updated"] },
+  { key:"weeklyCapacity",   label:"Weekly Capacity",   required:false, aliases:["capacity","hours capacity","weekly hours capacity","hrs capacity","total hours","fte hours","available hours"] },
+  { key:"currentAllocations",label:"Current Allocations",required:false,aliases:["allocations","current projects","active allocations","project allocations","assignments json"] },
+];
+
+const ROLE_FIELDS = [
+  { key:"roleTitle",            label:"Role Title",            required:true,  aliases:["title","role","position","job title","opening title","vacancy","role name"] },
+  { key:"client",               label:"Client",                required:true,  aliases:["client name","account","customer","company","organization","org"] },
+  { key:"projectName",          label:"Project Name",          required:true,  aliases:["project","program","engagement","project title","initiative","work stream"] },
+  { key:"jrs",                  label:"JRS",                   required:true,  aliases:["job role structure","job role","role type","position type","job function","jrs title"] },
+  { key:"bandMin",              label:"Band Min",              required:true,  aliases:["min band","minimum band","band minimum","grade min","level min","band from","band low"] },
+  { key:"bandMax",              label:"Band Max",              required:true,  aliases:["max band","maximum band","band maximum","grade max","level max","band to","band high"] },
+  { key:"requiredSkills",       label:"Required Skills",       required:true,  aliases:["skills","required skill","must have skills","mandatory skills","skills required","core skills"] },
+  { key:"startDate",            label:"Start Date",            required:true,  aliases:["start","role start","project start","begin date","kick off date","commencement","role start date"] },
+  { key:"location",             label:"Location",              required:true,  aliases:["city","site","office","work location","project location","city/state","base"] },
+  { key:"id",                   label:"ID",                    required:false, aliases:["role id","opening id","req id","requisition id","role #"] },
+  { key:"seatId",               label:"Seat ID",               required:false, aliases:["seat","seat number","tr id","tr #","requisition","req number"] },
+  { key:"dept",                 label:"Department",            required:false, aliases:["department","division","practice","team","business unit"] },
+  { key:"manager",              label:"Manager",               required:false, aliases:["hiring manager","project manager","delivery manager","pm","engagement manager"] },
+  { key:"quarter",              label:"Quarter",               required:false, aliases:["qtr","q","fiscal quarter","planning quarter","period"] },
+  { key:"niceToHaveSkills",     label:"Nice-to-Have Skills",   required:false, aliases:["preferred skills","optional skills","nice to have","bonus skills","desired skills","additional skills"] },
+  { key:"certifications",       label:"Certifications",        required:false, aliases:["required certs","certs","certificates","required certifications"] },
+  { key:"requiredIndustry",     label:"Required Industry",     required:false, aliases:["industry","required sector","vertical","industry required","sector"] },
+  { key:"niceToHaveIndustries", label:"Nice-to-Have Industries",required:false,aliases:["preferred industries","optional industries","industry nice to have","sectors preferred"] },
+  { key:"endDate",              label:"End Date",              required:false, aliases:["end","role end","project end","finish date","completion date","close date"] },
+  { key:"weeklyHours",          label:"Weekly Hours",          required:false, aliases:["hours","hours per week","weekly commitment","hrs/week","fte","effort"] },
+  { key:"travelRequired",       label:"Travel Required",       required:false, aliases:["travel","requires travel","travel needed","travel flag","on-site travel"] },
+  { key:"contractSigned",       label:"Contract Signed",       required:false, aliases:["contract","signed","contract status","msa signed","po signed","confirmed"] },
+  { key:"status",               label:"Status",                required:false, aliases:["role status","opening status","req status","demand status"] },
+];
+
+// ── Similarity scoring ──────────────────────────────────────────────────────
+
+function normHeader(s) {
+  return String(s).toLowerCase().replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+// Returns a confidence score 0-1 between a field definition and an actual header string
+function headerSimilarity(fieldDef, headerStr) {
+  const h = normHeader(headerStr);
+  const keyNorm = normHeader(fieldDef.key);
+  const labelNorm = normHeader(fieldDef.label);
+
+  // Exact matches
+  if (h === keyNorm || h === labelNorm) return 1.0;
+
+  // Alias exact match
+  if (fieldDef.aliases.some(a => normHeader(a) === h)) return 0.92;
+
+  // Key/label contains header or vice versa
+  if (keyNorm.includes(h) || h.includes(keyNorm)) return 0.80;
+  if (labelNorm.includes(h) || h.includes(labelNorm)) return 0.75;
+
+  // Alias contains header or vice versa
+  if (fieldDef.aliases.some(a => { const an = normHeader(a); return an.includes(h) || h.includes(an); })) return 0.65;
+
+  // Token overlap between header and key/label
+  const hTokens = h.split(" ").filter(t => t.length > 2);
+  const keyTokens = keyNorm.split(" ").filter(t => t.length > 2);
+  const labelTokens = labelNorm.split(" ").filter(t => t.length > 2);
+  const aliasTokens = fieldDef.aliases.flatMap(a => normHeader(a).split(" ").filter(t => t.length > 2));
+
+  const allTargetTokens = [...new Set([...keyTokens, ...labelTokens, ...aliasTokens])];
+  const matches = hTokens.filter(t => allTargetTokens.includes(t)).length;
+  if (matches > 0 && hTokens.length > 0) {
+    return Math.min(0.60, 0.30 + (matches / Math.max(hTokens.length, 1)) * 0.35);
+  }
+
+  return 0;
+}
+
+// Auto-detect the best source column for each expected field.
+// Returns an array of { fieldDef, sourceColumn, confidence, sampleValue }
+// confidence: 'high' (>=0.85), 'med' (>=0.55), 'low' (<0.55 or undetected)
+function autoMapColumns(fieldDefs, actualHeaders, sampleRow) {
+  const usedHeaders = new Set();
+
+  return fieldDefs.map(fieldDef => {
+    // Score all actual headers against this field
+    const scored = actualHeaders
+      .filter(h => !usedHeaders.has(h))
+      .map(h => ({ header: h, score: headerSimilarity(fieldDef, h) }))
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score);
+
+    if (scored.length === 0) {
+      return { fieldDef, sourceColumn: "", confidence: "low", score: 0, sampleValue: "" };
+    }
+
+    const best = scored[0];
+    // Only lock in the match if it's above a threshold, to avoid greedy false positives
+    const threshold = fieldDef.required ? 0.35 : 0.50;
+    if (best.score < threshold) {
+      return { fieldDef, sourceColumn: "", confidence: "low", score: best.score, sampleValue: "" };
+    }
+
+    usedHeaders.add(best.header);
+    const conf = best.score >= 0.85 ? "high" : best.score >= 0.55 ? "med" : "low";
+    const sampleValue = sampleRow ? String(sampleRow[best.header] ?? "").slice(0, 40) : "";
+    return { fieldDef, sourceColumn: best.header, confidence: conf, score: best.score, sampleValue };
+  });
+}
+
+// ── Mapping modal state ─────────────────────────────────────────────────────
+
+let _mappingState = null; // { type, rows, fieldDefs, mappings, actualHeaders }
+
+function openMappingModal(type, rows, fieldDefs, mappings, actualHeaders) {
+  _mappingState = { type, rows, fieldDefs, mappings, actualHeaders };
+  const sampleRow = rows[0] || {};
+
+  document.getElementById("mapping-subtitle").textContent =
+    `Uploaded file for "${type === "consultants" ? "Consultant Roster" : "Project Demand"}" ` +
+    `has ${actualHeaders.length} columns. The agent has auto-detected mappings below — ` +
+    `review and adjust any that are incorrect.`;
+
+  const tbody = document.getElementById("mapping-table-body");
+  tbody.innerHTML = mappings.map((m, idx) => {
+    const isReq = m.fieldDef.required;
+    const confLabel = m.confidence === "high" ? "High" : m.confidence === "med" ? "Medium" : "Low / Not found";
+    const confClass = `mapping-conf-${m.confidence === "high" ? "high" : m.confidence === "med" ? "med" : "low"}`;
+    const isUnresolved = isReq && !m.sourceColumn;
+
+    const options = [
+      `<option value="">(skip / leave blank)</option>`,
+      ...actualHeaders.map(h => `<option value="${h.replace(/"/g,'&quot;')}" ${m.sourceColumn === h ? "selected" : ""}>${h}</option>`)
+    ].join("");
+
+    return `<tr class="${isReq ? 'row-required' : ''}">
+      <td style="font-weight:${isReq?'700':'500'};font-size:13px;">${m.fieldDef.label}</td>
+      <td>
+        <select class="mapping-select ${isUnresolved ? 'unresolved' : ''}"
+                id="map-sel-${idx}"
+                onchange="onMappingSelChange(${idx}, this)">
+          ${options}
+        </select>
+      </td>
+      <td><span class="${confClass}">${confLabel}</span></td>
+      <td style="color:var(--muted);font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.sampleValue || "—"}</td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("mapping-alert").classList.remove("visible");
+  document.getElementById("mapping-modal").classList.add("open");
+  updateMappingFooter();
+}
+
+function onMappingSelChange(idx, selectEl) {
+  if (!_mappingState) return;
+  _mappingState.mappings[idx].sourceColumn = selectEl.value;
+  selectEl.classList.toggle("unresolved", _mappingState.mappings[idx].fieldDef.required && !selectEl.value);
+  updateMappingFooter();
+}
+
+function updateMappingFooter() {
+  if (!_mappingState) return;
+  const unresolvedRequired = _mappingState.mappings.filter(m => m.fieldDef.required && !m.sourceColumn).length;
+  const note = document.getElementById("mapping-footer-note");
+  note.textContent = unresolvedRequired > 0
+    ? `${unresolvedRequired} required field(s) still unmapped`
+    : `All required fields mapped — ready to apply`;
+  note.style.color = unresolvedRequired > 0 ? "var(--red)" : "var(--green)";
+}
+
+function closeMappingModal() {
+  document.getElementById("mapping-modal").classList.remove("open");
+  _mappingState = null;
+}
+
+function confirmMapping() {
+  if (!_mappingState) return;
+  const { type, rows, fieldDefs, mappings } = _mappingState;
+
+  // Validate all required fields are mapped
+  const missing = mappings.filter(m => m.fieldDef.required && !m.sourceColumn).map(m => m.fieldDef.label);
+  if (missing.length > 0) {
+    document.getElementById("mapping-alert").classList.add("visible");
+    return;
+  }
+
+  // Build the column→field key lookup
+  const colToKey = {};
+  mappings.forEach(m => {
+    if (m.sourceColumn) colToKey[m.sourceColumn] = m.fieldDef.key;
+  });
+
+  // Remap rows: translate source column names → expected field keys
+  const remappedRows = rows.map(row => {
+    const newRow = {};
+    Object.entries(row).forEach(([col, val]) => {
+      const key = colToKey[col];
+      if (key) newRow[key] = val;
+      // Also keep original key in case it already matched (belt-and-suspenders)
+      else newRow[col] = val;
+    });
+    return newRow;
+  });
+
+  closeMappingModal();
+
+  // Now pass remapped rows through the normal parser
+  const statusEl = document.getElementById(`status-${type}`);
+  try {
+    let parsed;
+    if (type === "consultants") {
+      parsed = parseConsultantRows(remappedRows);
+      _pendingData.consultants = parsed;
+      statusEl.className = "file-status success";
+      statusEl.textContent = `✓ ${parsed.length} consultant records loaded (column mapping applied)`;
+    } else {
+      parsed = parseRoleRows(remappedRows);
+      _pendingData.roles = parsed;
+      statusEl.className = "file-status success";
+      statusEl.textContent = `✓ ${parsed.length} role records loaded (column mapping applied)`;
+    }
+  } catch (err) {
+    statusEl.className = "file-status error";
+    statusEl.textContent = `✗ ${err.message}`;
+    _pendingData[type] = null;
+  }
+
+  updateApplyButton();
 }
 
 // ─── Upload / Source Data ─────────────────────────────────────────────────────
@@ -1773,7 +2318,19 @@ function parseConsultantRows(rows) {
     location:         String(r.location || "").trim(),
     travelWillingness: parseBool(r.travelWillingness),
     assignmentStatus: String(r.assignmentStatus || "Bench").trim(),
+    utilizationPercentage: (() => {
+      if (r.utilizationPercentage === "" || r.utilizationPercentage == null) return null;
+      const pct = Number.parseFloat(String(r.utilizationPercentage).replace("%", "").trim());
+      return Number.isFinite(pct) && pct >= 0 && pct <= 1000 ? pct : null;
+    })(),
     benchStatus:      r.benchStatus !== "" ? parseBool(r.benchStatus) : (String(r.assignmentStatus||"").toLowerCase()==="bench"),
+    weeklyCapacity:   r.weeklyCapacity !== "" ? (parseInt(r.weeklyCapacity) || 40) : 40,
+    // currentAllocations may be JSON string or empty — parse if present
+    currentAllocations: (() => {
+      if (!r.currentAllocations) return [];
+      try { const p = JSON.parse(r.currentAllocations); return Array.isArray(p) ? p : []; }
+      catch { return []; }
+    })(),
   })).filter(c => c.name);
 }
 
@@ -1818,14 +2375,19 @@ function readFileAsArrayBuffer(file) {
 }
 
 async function handleFileSelect(event, type) {
-  const file = event.target.files[0];
+  const input = event.target;
+  const file = input.files[0];
   if (!file) return;
-  await processUploadFile(file, type);
+  try {
+    await processUploadFile(file, type);
+  } finally {
+    // Allow the same project or consultant file to be selected again.
+    input.value = "";
+  }
 }
 
 async function processUploadFile(file, type) {
   const statusEl = document.getElementById(`status-${type}`);
-  const dzEl = document.getElementById(`dz-${type}`);
   statusEl.className = "file-status info";
   statusEl.textContent = `Reading ${file.name}…`;
 
@@ -1835,25 +2397,67 @@ async function processUploadFile(file, type) {
     const rows = sheetToRows(wb);
     if (!rows.length) throw new Error("File appears to be empty");
 
-    let parsed;
-    if (type === "consultants") {
-      parsed = parseConsultantRows(rows);
-      _pendingData.consultants = parsed;
-      statusEl.className = "file-status success";
-      statusEl.textContent = `✓ ${file.name} — ${parsed.length} consultant records loaded`;
+    const actualHeaders = Object.keys(rows[0] || {});
+    const fieldDefs = type === "consultants" ? CONSULTANT_FIELDS : ROLE_FIELDS;
+    const requiredKeys = fieldDefs.filter(f => f.required).map(f => f.key);
+
+    // Check if all required column keys are already present (exact match — no mapping needed)
+    const allPresent = requiredKeys.every(k => actualHeaders.includes(k));
+
+    if (allPresent) {
+      // Fast path: headers already match — parse directly
+      let parsed;
+      if (type === "consultants") {
+        parsed = parseConsultantRows(rows);
+        _pendingData.consultants = parsed;
+        statusEl.className = "file-status success";
+        statusEl.textContent = `✓ ${file.name} — ${parsed.length} consultant records loaded`;
+      } else {
+        parsed = parseRoleRows(rows);
+        _pendingData.roles = parsed;
+        statusEl.className = "file-status success";
+        statusEl.textContent = `✓ ${file.name} — ${parsed.length} role records loaded`;
+      }
+      updateApplyButton();
     } else {
-      parsed = parseRoleRows(rows);
-      _pendingData.roles = parsed;
-      statusEl.className = "file-status success";
-      statusEl.textContent = `✓ ${file.name} — ${parsed.length} role records loaded`;
+      const mappings = autoMapColumns(fieldDefs, actualHeaders, rows[0]);
+      const requiredMappingsAreHighConfidence = mappings
+        .filter(m => m.fieldDef.required)
+        .every(m => m.sourceColumn && m.confidence === "high");
+
+      if (requiredMappingsAreHighConfidence) {
+        // Human-readable export headers can be mapped safely without an extra confirmation step.
+        const colToKey = {};
+        mappings.forEach(m => {
+          if (m.sourceColumn) colToKey[m.sourceColumn] = m.fieldDef.key;
+        });
+        const remappedRows = rows.map(row => {
+          const newRow = {};
+          Object.entries(row).forEach(([col, value]) => {
+            newRow[colToKey[col] || col] = value;
+          });
+          return newRow;
+        });
+        const parsed = type === "consultants"
+          ? parseConsultantRows(remappedRows)
+          : parseRoleRows(remappedRows);
+        _pendingData[type] = parsed;
+        statusEl.className = "file-status success";
+        statusEl.textContent = `✓ ${file.name} — ${parsed.length} ${type === "consultants" ? "consultant" : "role"} records loaded`;
+        updateApplyButton();
+      } else {
+        // Ambiguous headers still require review in the mapping agent.
+        statusEl.className = "file-status info";
+        statusEl.textContent = `⚙ ${file.name} — review the column mappings to continue`;
+        openMappingModal(type, rows, fieldDefs, mappings, actualHeaders);
+      }
     }
   } catch (err) {
     statusEl.className = "file-status error";
     statusEl.textContent = `✗ ${err.message}`;
     _pendingData[type] = null;
+    updateApplyButton();
   }
-
-  updateApplyButton();
 }
 
 function updateApplyButton() {
@@ -1914,6 +2518,11 @@ function applyUploadedData() {
   showDemand();
   closeUploadModal();
   updateDataSourceBadge();
+  // Re-seed utilization sidebar badge with new data
+  const _utilMap = buildUtilizationMap();
+  const _over = _utilMap.filter(u => u.util.status === "over").length;
+  const _bench = _utilMap.filter(u => u.util.status === "bench").length;
+  document.getElementById("sidebar-util-count").textContent = _over + _bench;
 
   // Show banner
   const banner = document.createElement("div");
@@ -2001,11 +2610,404 @@ function clearCandFilters() {
   renderCandidates();
 }
 
+
+// ─── Utilization Engine ──────────────────────────────────────────────────────
+
+// Thresholds (% of weeklyCapacity)
+const UTIL_OVER    = 100; // >100% = overallocated
+const UTIL_FULL_LO =  70; // 70–100% = fully utilized
+const UTIL_PART_LO =   1; // 1–69% = underutilized / partial
+// 0% = bench
+
+/**
+ * Compute utilization for a single consultant.
+ * Returns { allocatedHours, capacityHours, pct, status, freeHours, allocations }
+ * status: 'over' | 'full' | 'partial' | 'bench'
+ */
+function calcUtilization(consultant) {
+  const capacity = consultant.weeklyCapacity || 40;
+  const allocs   = consultant.currentAllocations || [];
+
+  // If no detailed allocations are provided, use an uploaded utilization percentage
+  // before falling back to assignmentStatus.
+  if (allocs.length === 0) {
+    const s = (consultant.assignmentStatus || "").toLowerCase();
+    let pct = Number.isFinite(consultant.utilizationPercentage)
+      ? consultant.utilizationPercentage
+      : 0;
+    if (!Number.isFinite(consultant.utilizationPercentage)) {
+      if (s === "active") pct = 100;
+      else if (s === "project ending") pct = 50;
+    }
+    let status;
+    if (pct === 0)             status = "bench";
+    else if (pct > UTIL_OVER)  status = "over";
+    else if (pct >= UTIL_FULL_LO) status = "full";
+    else                       status = "partial";
+    const inferredHours = Math.round((pct / 100) * capacity);
+    return {
+      allocatedHours: inferredHours,
+      capacityHours:  capacity,
+      pct,
+      status,
+      freeHours:  Math.max(0, capacity - inferredHours),
+      allocations: [],
+      inferred:    true,  // flag so the UI can show an explanatory note
+    };
+  }
+
+  const allocated = allocs.reduce((sum, a) => sum + (a.weeklyHours || 0), 0);
+  const pct    = capacity > 0 ? Math.round((allocated / capacity) * 100) : 0;
+  const free   = Math.max(0, capacity - allocated);
+
+  let status;
+  if (allocated === 0)          status = "bench";
+  else if (pct > UTIL_OVER)     status = "over";
+  else if (pct >= UTIL_FULL_LO) status = "full";
+  else                          status = "partial";
+
+  return { allocatedHours: allocated, capacityHours: capacity, pct, status, freeHours: free, allocations: allocs, inferred: false };
+}
+
+// Build utilization records for every consultant
+function buildUtilizationMap() {
+  return consultants.map(c => ({ consultant: c, util: calcUtilization(c) }));
+}
+
+// ─── Rebalancing Engine ──────────────────────────────────────────────────────
+
+/**
+ * Generate rebalancing actions. Each action has:
+ *   { priority, type, consultant, detail, suggestedRole? }
+ * Types:
+ *   'overallocated'  — person is above 100%, flag for rolloff
+ *   'underutilized'  — person has capacity, recommend for open roles
+ *   'bench'          — person has zero allocation, urgent staffing needed
+ */
+function buildRebalancingActions(utilMap) {
+  const actions = [];
+  const today = new Date().toISOString().slice(0, 10);
+
+  utilMap.forEach(({ consultant: c, util }) => {
+    if (util.status === "over") {
+      const excessHours = util.allocatedHours - util.capacityHours;
+      // Find the allocation ending soonest to suggest as rolloff candidate
+      const soonestEnd = util.allocations
+        .filter(a => a.endDate)
+        .sort((a, b) => new Date(a.endDate) - new Date(b.endDate))[0];
+      actions.push({
+        priority: "high",
+        type: "overallocated",
+        consultant: c,
+        util,
+        detail: `${c.name} is at ${util.pct}% utilization (${util.allocatedHours}h allocated vs ${util.capacityHours}h capacity). ${excessHours}h over budget.`,
+        suggestion: soonestEnd
+          ? `Consider rolling off "${soonestEnd.projectName}" (ending ${soonestEnd.endDate}) to bring within capacity.`
+          : "Review allocations and remove or reduce one engagement.",
+      });
+    }
+
+    if (util.status === "bench") {
+      // Find the best-matching open role for this person
+      const topMatch = roles
+        .map(r => ({ role: r, score: scoreConsultant(c, r).overallScore }))
+        .sort((a, b) => b.score - a.score)[0];
+      actions.push({
+        priority: "high",
+        type: "bench",
+        consultant: c,
+        util,
+        detail: `${c.name} is on bench with 0h allocated — ${util.capacityHours}h/week fully available.`,
+        suggestion: topMatch && topMatch.score >= 40
+          ? `Best open role match: "${topMatch.role.roleTitle}" for ${topMatch.role.client} (score ${topMatch.score}).`
+          : "No strong open role match found — consider internal projects or skills development.",
+        topRole: topMatch,
+      });
+    }
+
+    if (util.status === "partial") {
+      const freeHrs = util.freeHours;
+      // Find open roles where this person has capacity to contribute
+      const matchingRoles = roles
+        .filter(r => r.weeklyHours <= freeHrs || r.weeklyHours <= 20) // fits in free capacity or part-time
+        .map(r => ({ role: r, score: scoreConsultant(c, r).overallScore }))
+        .filter(x => x.score >= 50)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 2);
+      if (matchingRoles.length > 0) {
+        actions.push({
+          priority: "medium",
+          type: "underutilized",
+          consultant: c,
+          util,
+          detail: `${c.name} is at ${util.pct}% utilization with ${freeHrs}h/week free capacity.`,
+          suggestion: `Could take on: ${matchingRoles.map(m => `"${m.role.roleTitle}" (${m.role.client}, score ${m.score})`).join(" · ")}`,
+          matchingRoles,
+        });
+      }
+    }
+  });
+
+  // Sort: high priority first, then by utilization pct descending within each priority
+  return actions.sort((a, b) => {
+    const pOrder = { high: 0, medium: 1, low: 2 };
+    if (pOrder[a.priority] !== pOrder[b.priority]) return pOrder[a.priority] - pOrder[b.priority];
+    return b.util.pct - a.util.pct;
+  });
+}
+
+// ─── Utilization Dashboard Render ────────────────────────────────────────────
+
+function utilBarColor(status) {
+  if (status === "over")    return "var(--red)";
+  if (status === "full")    return "var(--green)";
+  if (status === "partial") return "var(--yellow)";
+  return "var(--muted)";
+}
+
+function utilStatusBadge(status, pct) {
+  const labels = { over:"Overallocated", full:"Fully Utilized", partial:"Underutilized", bench:"On Bench" };
+  return `<span class="util-status-badge util-${status}">${labels[status]} · ${pct}%</span>`;
+}
+
+// Build a lookup: consultantId → array of { role, rank, score } for roles where they rank top-5 or score ≥ 50
+function buildRoleMatchesForConsultants() {
+  const map = {};
+  roles.forEach(role => {
+    const rankings = rankForRole(role);
+    rankings.forEach(res => {
+      const cid = res.consultant.id;
+      if (res.rank <= 5 || res.overallScore >= 50) {
+        if (!map[cid]) map[cid] = [];
+        map[cid].push({ role, rank: res.rank, score: res.overallScore });
+      }
+    });
+  });
+  // Sort each consultant's matches by score desc
+  Object.values(map).forEach(arr => arr.sort((a, b) => b.score - a.score));
+  return map;
+}
+
+function renderUtilizationDashboard() {
+  const nameF   = (document.getElementById("uf-name")?.value || "").trim().toLowerCase();
+  const deptF   = document.getElementById("uf-dept")?.value || "";
+  const statusF = document.getElementById("uf-status")?.value || "";
+
+  // ── Populate dept filter dynamically from current consultant data ──
+  const deptSel = document.getElementById("uf-dept");
+  if (deptSel) {
+    const depts = [...new Set(consultants.map(c => c.dept).filter(Boolean))].sort();
+    const currentVal = deptSel.value;
+    deptSel.innerHTML = `<option value="">All Depts</option>` +
+      depts.map(d => `<option value="${d.replace(/"/g,'&quot;')}"${d === currentVal ? ' selected' : ''}>${d}</option>`).join("");
+  }
+
+  const utilMap = buildUtilizationMap();
+  // Pre-build open-role matches for all consultants once
+  const roleMatchMap = buildRoleMatchesForConsultants();
+
+  let filtered = utilMap;
+  if (nameF)   filtered = filtered.filter(u => String(u.consultant.name || "").toLowerCase().includes(nameF));
+  if (deptF)   filtered = filtered.filter(u => u.consultant.dept === deptF);
+  if (statusF) filtered = filtered.filter(u => u.util.status === statusF);
+
+  const actions = buildRebalancingActions(filtered);
+
+  // ── Stat cards ──
+  const allPcts   = filtered.map(u => u.util.pct);
+  const avgUtil   = allPcts.length ? Math.round(allPcts.reduce((s, p) => s + p, 0) / allPcts.length) : 0;
+  const overCount = filtered.filter(u => u.util.status === "over").length;
+  const underCount= filtered.filter(u => u.util.status === "partial").length;
+  const benchCount= filtered.filter(u => u.util.status === "bench").length;
+  const totalOverCount = utilMap.filter(u => u.util.status === "over").length;
+  const totalBenchCount = utilMap.filter(u => u.util.status === "bench").length;
+
+  document.getElementById("stat-avg-util").textContent   = avgUtil + "%";
+  document.getElementById("stat-over-count").textContent = overCount;
+  document.getElementById("stat-under-count").textContent= underCount;
+  document.getElementById("stat-bench-count").textContent= benchCount;
+  document.getElementById("sidebar-util-count").textContent = totalOverCount + totalBenchCount;
+
+  // ── Rebalancing actions ──
+  const rebalSection = document.getElementById("rebal-section");
+  const rebalList    = document.getElementById("rebal-list");
+  if (actions.length > 0) {
+    rebalSection.style.display = "block";
+    document.getElementById("rebal-action-count").textContent = actions.length;
+    rebalList.innerHTML = actions.map((a, idx) => {
+      const icon = a.type === "overallocated" ? "⚠️" : a.type === "bench" ? "💤" : "↗️";
+      const typeLabel = a.type === "overallocated" ? "Overallocated" : a.type === "bench" ? "Bench — Unallocated" : "Underutilized — Capacity Available";
+      return `
+      <div class="rebal-card">
+        <div class="rebal-card-header" onclick="toggleRebal(${idx})">
+          <span class="rebal-icon">${icon}</span>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:13px;">${a.consultant.name}
+              <span style="font-weight:400;color:var(--muted);font-size:12px;margin-left:6px;">${a.consultant.jrs} · Band ${a.consultant.band} · ${a.consultant.dept}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${typeLabel}</div>
+          </div>
+          ${utilStatusBadge(a.util.status, a.util.pct)}
+          <svg id="rebal-chev-${idx}" width="14" height="14" viewBox="0 0 16 16" fill="var(--muted)" style="margin-left:8px;transform:rotate(0deg);transition:transform .2s;flex-shrink:0;"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="rebal-card-body" id="rebal-body-${idx}">
+          <div class="rebal-action rebal-action-${a.priority}">
+            <div>
+              <div class="rebal-title">${a.priority === "high" ? "🔴" : "🟡"} ${a.priority.charAt(0).toUpperCase() + a.priority.slice(1)} Priority</div>
+              <div class="rebal-detail">${a.detail}</div>
+              <div class="rebal-detail" style="margin-top:6px;font-style:italic;">💡 ${a.suggestion}</div>
+            </div>
+          </div>
+          ${a.util.allocations.length > 0 ? `
+          <div style="font-size:12px;font-weight:700;margin:10px 0 6px;">Current Allocations</div>
+          ${a.util.allocations.map(al => `
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">
+              <div style="flex:1;"><strong>${al.projectName}</strong><span style="color:var(--muted);margin-left:6px;">${al.client}</span></div>
+              <div style="color:var(--muted);">${al.startDate} → ${al.endDate || "ongoing"}</div>
+              <span class="alloc-chip ${al.weeklyHours + (a.util.allocatedHours - al.weeklyHours) > a.util.capacityHours && a.util.status === "over" ? "alloc-chip-over" : ""}">${al.weeklyHours}h/wk</span>
+            </div>`).join("")}` : ""}
+          ${a.topRole ? `
+          <div style="margin-top:10px;">
+            <button class="btn-back" style="margin-bottom:0;font-size:12px;" onclick="openRole('${a.topRole.role.id}');showDemand();setTimeout(()=>openRole('${a.topRole.role.id}'),50)">
+              View Match: ${a.topRole.role.roleTitle} →
+            </button>
+          </div>` : ""}
+          ${a.matchingRoles?.length > 0 ? `
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            ${a.matchingRoles.map(m => `
+              <button class="btn-back" style="margin-bottom:0;font-size:12px;" onclick="openRole('${m.role.id}')">
+                View: ${m.role.roleTitle} (${m.score}) →
+              </button>`).join("")}
+          </div>` : ""}
+        </div>
+      </div>`;
+    }).join("");
+  } else {
+    rebalSection.style.display = "none";
+  }
+
+  // ── Consultant load table ──
+  // Sort: over first, then bench, then partial, then full
+  const statusOrder = { over: 0, bench: 1, partial: 2, full: 3 };
+  filtered = [...filtered].sort((a, b) => {
+    const od = statusOrder[a.util.status] - statusOrder[b.util.status];
+    return od !== 0 ? od : b.util.pct - a.util.pct;
+  });
+
+  const tbody = document.getElementById("util-table-body");
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">No consultants match the selected filters.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(({ consultant: c, util }) => {
+    const barColor = utilBarColor(util.status);
+    const barW     = Math.min(100, util.pct);
+    const allocNames = util.allocations.length > 0
+      ? util.allocations.map(a => `<span class="alloc-chip">${a.projectName}</span>`).join("")
+      : `<span style="color:var(--muted);font-size:12px;">—</span>`;
+    const expandId = `util-expand-${c.id}`;
+
+    // Open-role matches for this consultant
+    const roleMatches = roleMatchMap[c.id] || [];
+    const roleMatchHtml = roleMatches.length > 0
+      ? roleMatches.slice(0, 3).map(m =>
+          `<span class="alloc-chip" style="cursor:pointer;" onclick="event.stopPropagation();openRole('${m.role.id}');showDemand();setTimeout(()=>openRole('${m.role.id}'),50)" title="${m.role.client} · Score ${m.score}">${m.role.roleTitle} <span style="color:var(--muted);font-size:10px;">#${m.rank}</span></span>`
+        ).join("") +
+        (roleMatches.length > 3 ? `<span style="font-size:11px;color:var(--muted);margin-left:4px;">+${roleMatches.length - 3} more</span>` : "")
+      : `<span style="color:var(--muted);font-size:12px;">—</span>`;
+
+    return `
+    <tr onclick="toggleUtilRow('${c.id}')" style="cursor:pointer;">
+      <td>
+        <div style="font-weight:600;">${c.name}</div>
+        <div style="font-size:11px;color:var(--muted);">Band ${c.band} · ${c.jrs}</div>
+      </td>
+      <td>
+        <div style="font-size:13px;">${c.dept || "—"}</div>
+        <div style="font-size:11px;color:var(--muted);">${c.manager || ""}</div>
+      </td>
+      <td>${allocNames}</td>
+      <td>${roleMatchHtml}</td>
+      <td>
+        <div class="util-bar-wrap">
+          <div class="util-bar-outer">
+            <div class="util-bar-inner" style="width:${barW}%;background:${barColor};"></div>
+          </div>
+          <span class="util-pct" style="color:${barColor};">${util.pct}%</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">${util.allocatedHours}h / ${util.capacityHours}h per week${util.inferred ? ' <span title="Estimated from Assignment Status — upload currentAllocations for precise data" style="color:var(--yellow);cursor:help;">~ estimated</span>' : ''}</div>
+      </td>
+      <td style="font-weight:600;color:${util.freeHours > 0 ? "var(--green)" : "var(--muted)"};">${util.freeHours}h/wk</td>
+      <td>${utilStatusBadge(util.status, util.pct)}</td>
+    </tr>
+    <tr id="${expandId}" style="display:none;">
+      <td colspan="7" style="background:var(--bg);padding:0;">
+        <div style="padding:12px 16px;">
+          ${util.allocations.length === 0
+            ? `<div style="font-size:12px;color:var(--muted);font-style:italic;">No current allocations on record.</div>`
+            : `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <tr style="color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;">
+                  <th style="padding:4px 8px;text-align:left;">Project</th>
+                  <th style="padding:4px 8px;text-align:left;">Client</th>
+                  <th style="padding:4px 8px;text-align:left;">Start</th>
+                  <th style="padding:4px 8px;text-align:left;">End</th>
+                  <th style="padding:4px 8px;text-align:right;">Hrs/Wk</th>
+                </tr>
+                ${util.allocations.map(a => `
+                  <tr style="border-top:1px solid var(--border);">
+                    <td style="padding:5px 8px;font-weight:600;">${a.projectName}</td>
+                    <td style="padding:5px 8px;color:var(--muted);">${a.client}</td>
+                    <td style="padding:5px 8px;">${a.startDate}</td>
+                    <td style="padding:5px 8px;">${a.endDate || "Ongoing"}</td>
+                    <td style="padding:5px 8px;text-align:right;font-weight:600;">${a.weeklyHours}</td>
+                  </tr>`).join("")}
+                <tr style="border-top:2px solid var(--border);font-weight:700;">
+                  <td colspan="4" style="padding:5px 8px;">Total</td>
+                  <td style="padding:5px 8px;text-align:right;">${util.allocatedHours}h</td>
+                </tr>
+              </table>`}
+          ${roleMatches.length > 0 ? `
+          <div style="margin-top:10px;">
+            <div style="font-size:12px;font-weight:700;margin-bottom:6px;">Open Role Candidates (${roleMatches.length})</div>
+            ${roleMatches.map(m => `
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;">
+                <div style="flex:1;"><strong>${m.role.roleTitle}</strong><span style="color:var(--muted);margin-left:6px;">${m.role.client} · ${m.role.projectName}</span></div>
+                <span class="badge badge-gray">#${m.rank} · Score ${m.score}</span>
+                <button class="btn-back" style="margin:0;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation();openRole('${m.role.id}');showDemand();setTimeout(()=>openRole('${m.role.id}'),50)">View →</button>
+              </div>`).join("")}
+          </div>` : ""}
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function toggleUtilRow(consultantId) {
+  const row = document.getElementById(`util-expand-${consultantId}`);
+  if (!row) return;
+  row.style.display = row.style.display === "none" ? "table-row" : "none";
+}
+
+function toggleRebal(idx) {
+  const body = document.getElementById(`rebal-body-${idx}`);
+  const chev = document.getElementById(`rebal-chev-${idx}`);
+  if (!body) return;
+  const isOpen = body.classList.contains("open");
+  body.classList.toggle("open", !isOpen);
+  if (chev) chev.style.transform = isOpen ? "rotate(0deg)" : "rotate(180deg)";
+}
+
+
 // ─── Expose globals & init ────────────────────────────────────────────────────
 
 window.openRole = openRole;
 window.toggleCandidate = toggleCandidate;
 window.showDemand = showDemand;
+window.showUtilization = showUtilization;
+window.renderUtilizationDashboard = renderUtilizationDashboard;
+window.toggleUtilRow = toggleUtilRow;
+window.toggleRebal = toggleRebal;
 window.renderRoleTable = renderRoleTable;
 window.renderCandidates = renderCandidates;
 window.applyFilters = applyFilters;
@@ -2019,9 +3021,18 @@ window.handleModalOverlayClick = handleModalOverlayClick;
 window.switchUploadTab = switchUploadTab;
 window.handleFileSelect = handleFileSelect;
 window.applyUploadedData = applyUploadedData;
+window.resetToSampleData = resetToSampleData;
 window.dzDragOver = dzDragOver;
 window.dzDragLeave = dzDragLeave;
 window.dzDrop = dzDrop;
+window.closeMappingModal = closeMappingModal;
+window.confirmMapping = confirmMapping;
+window.onMappingSelChange = onMappingSelChange;
+window.viewConsultantUtilization = viewConsultantUtilization;
+
+// Wire upload controls directly so project uploads do not depend solely on inline handlers.
+document.getElementById("tab-btn-roles").addEventListener("click", () => switchUploadTab("roles"));
+document.getElementById("file-roles").addEventListener("change", event => handleFileSelect(event, "roles"));
 
 // Load persisted data before first render (replaces sample data if saved data exists)
 const _hadSavedData = loadFromStorage();
@@ -2029,6 +3040,13 @@ const _hadSavedData = loadFromStorage();
 initStats();
 renderRoleTable();
 updateDataSourceBadge();
+// Seed utilization badge in sidebar without rendering the full view
+(function seedUtilBadge() {
+  const utilMap = buildUtilizationMap();
+  const over = utilMap.filter(u => u.util.status === "over").length;
+  const bench = utilMap.filter(u => u.util.status === "bench").length;
+  document.getElementById("sidebar-util-count").textContent = over + bench;
+})();
 </script>
 
 </body>
