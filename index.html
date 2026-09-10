@@ -753,7 +753,100 @@
     }
     .mapping-alert.visible { display: block; }
     .mapping-legend { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
-  </style>
+  /* ── Email Notification Modal ── */
+  .email-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 1200;
+    align-items: center;
+    justify-content: center;
+  }
+  .email-modal-overlay.open { display: flex; }
+  .email-modal-box {
+    background: var(--surface);
+    border-radius: 10px;
+    width: 480px;
+    max-width: 95vw;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+  .email-modal-header {
+    background: var(--header-bg);
+    padding: 18px 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .email-modal-header-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .email-modal-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+  }
+  .email-modal-header p {
+    font-size: 12px;
+    color: #a0aab4;
+    margin: 2px 0 0;
+  }
+  .email-modal-body { padding: 20px; }
+  .email-modal-body label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .email-modal-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    margin-bottom: 14px;
+  }
+  .email-modal-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(15,98,254,0.12); }
+  .email-modal-input.error { border-color: var(--red); background: var(--red-light); }
+  .email-modal-notice {
+    background: var(--accent-light);
+    border: 1px solid #b0ceff;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .email-modal-notice svg { flex-shrink: 0; margin-top: 1px; }
+  .email-modal-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: var(--bg);
+  }
+  .email-err { font-size: 12px; color: var(--red); margin-top: -10px; margin-bottom: 12px; display: none; }
+  .email-err.visible { display: block; }
+</style>
 </head>
 <body>
 
@@ -775,6 +868,42 @@
   <span id="data-source-badge" class="topnav-badge" style="margin-left:8px;">Sample Data</span>
   <span class="topnav-badge" style="margin-left:4px;">DRAFT v0.1</span>
 </nav>
+
+<!-- ═══ EMAIL NOTIFICATION MODAL ═══ -->
+<div class="email-modal-overlay" id="email-modal">
+  <div class="email-modal-box">
+    <div class="email-modal-header">
+      <div class="email-modal-header-icon">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="#fff"><path d="M1 3.5A1.5 1.5 0 012.5 2h11A1.5 1.5 0 0115 3.5v9A1.5 1.5 0 0113.5 14h-11A1.5 1.5 0 011 12.5v-9zm1.5-.5a.5.5 0 00-.5.5v.535l6 3.6 6-3.6V3.5a.5.5 0 00-.5-.5h-11zm11.5 2.35l-5.5 3.3a1 1 0 01-1 0L2 5.35V12.5a.5.5 0 00.5.5h11a.5.5 0 00.5-.5V5.35z"/></svg>
+      </div>
+      <div>
+        <h2>Export &amp; Email Notification</h2>
+        <p>Your report will download and an email notification will be sent</p>
+      </div>
+    </div>
+    <div class="email-modal-body">
+      <div class="email-modal-notice">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.75 4a.75.75 0 00-1.5 0v3.25a.75.75 0 001.5 0V5zm-.75 6a1 1 0 110-2 1 1 0 010 2z"/></svg>
+        <span>The Excel file will download to your device. An email notification — including a download summary and the file as an attachment — will be prepared in your default mail client.</span>
+      </div>
+      <label for="email-address-input">Your Email Address</label>
+      <input type="email" id="email-address-input" class="email-modal-input"
+             placeholder="you@ibm.com"
+             oninput="clearEmailError()" />
+      <div class="email-err" id="email-err">Please enter a valid email address.</div>
+      <label for="email-subject-input">Subject <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+      <input type="text" id="email-subject-input" class="email-modal-input"
+             placeholder="Resource Utilization Report" />
+    </div>
+    <div class="email-modal-footer">
+      <button class="btn-cancel-modal" onclick="closeEmailModal()">Cancel</button>
+      <button class="btn-apply" onclick="confirmEmailExport()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:middle;margin-right:5px;"><path d="M2 14h12v-1.5H2V14zm6-2L4.5 8H7V2h2v6h2.5L8 12z"/></svg>
+        Download &amp; Send Email
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══ UPLOAD MODAL ═══ -->
 <div class="modal-overlay" id="upload-modal" onclick="handleModalOverlayClick(event)">
@@ -1814,6 +1943,97 @@ function viewConsultantUtilization(consultantId) {
   }
 }
 
+// ─── Email Export Flow ────────────────────────────────────────────────────────
+
+let _pendingExportFn = null; // 'all' | 'role'
+
+function openEmailModal(exportType) {
+  _pendingExportFn = exportType;
+  const subjectEl = document.getElementById("email-subject-input");
+  const ts = new Date().toISOString().slice(0, 10);
+  if (exportType === "role" && currentRole) {
+    subjectEl.value = `Resource Match Report — ${currentRole.roleTitle} (${currentRole.client}) · ${ts}`;
+  } else {
+    subjectEl.value = `Resource Utilization Report · ${ts}`;
+  }
+  clearEmailError();
+  document.getElementById("email-address-input").value = "";
+  document.getElementById("email-modal").classList.add("open");
+  setTimeout(() => document.getElementById("email-address-input").focus(), 80);
+}
+
+function closeEmailModal() {
+  document.getElementById("email-modal").classList.remove("open");
+  _pendingExportFn = null;
+}
+
+function clearEmailError() {
+  const input = document.getElementById("email-address-input");
+  const err   = document.getElementById("email-err");
+  input.classList.remove("error");
+  err.classList.remove("visible");
+}
+
+function confirmEmailExport() {
+  const emailInput = document.getElementById("email-address-input");
+  const email = emailInput.value.trim();
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!valid) {
+    emailInput.classList.add("error");
+    document.getElementById("email-err").classList.add("visible");
+    emailInput.focus();
+    return;
+  }
+  const subject = document.getElementById("email-subject-input").value.trim()
+    || (_pendingExportFn === "role" && currentRole
+        ? `Resource Match Report — ${currentRole.roleTitle} (${currentRole.client})`
+        : "Resource Utilization Report");
+  closeEmailModal();
+  if (_pendingExportFn === "role") {
+    _doExportRoleToExcel(email, subject);
+  } else {
+    _doExportToExcel(email, subject);
+  }
+}
+
+function _sendEmailNotification(email, subject, fileName, sheetNames, rowCounts) {
+  const ts = new Date().toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" });
+  const sheetsDetail = sheetNames.map((s, i) => `  • ${s} — ${rowCounts[i]} row${rowCounts[i] !== 1 ? "s" : ""}`).join("\n");
+  const body =
+`Hi,
+
+Your Resource Utilization Optimizer export is ready.
+
+File name:  ${fileName}
+Exported:   ${ts}
+Sheets:
+${sheetsDetail}
+
+The file has been downloaded to your device. Please find the attached Excel report for your review. It contains up-to-date staffing data, candidate match scores, and consultant utilization details from the IBM Consulting Resource Utilization Optimizer.
+
+If you have any questions about the data, please reach out to your resource management team.
+
+—
+IBM Consulting · Resource Utilization Optimizer`;
+
+  const mailto = `mailto:${encodeURIComponent(email)}`
+    + `?subject=${encodeURIComponent(subject)}`
+    + `&body=${encodeURIComponent(body)}`;
+
+  const link = document.createElement("a");
+  link.href = mailto;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  const banner = document.createElement("div");
+  banner.style.cssText = "position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--header-bg);color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:6px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;align-items:center;gap:10px;border:1px solid #2a5abf;white-space:nowrap;";
+  banner.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="#78a9ff"><path d="M1 3.5A1.5 1.5 0 012.5 2h11A1.5 1.5 0 0115 3.5v9A1.5 1.5 0 0113.5 14h-11A1.5 1.5 0 011 12.5v-9zm1.5-.5a.5.5 0 00-.5.5v.535l6 3.6 6-3.6V3.5a.5.5 0 00-.5-.5h-11zm11.5 2.35l-5.5 3.3a1 1 0 01-1 0L2 5.35V12.5a.5.5 0 00.5.5h11a.5.5 0 00.5-.5V5.35z"/></svg><span>&#x2713; Report downloaded &amp; email notification prepared for <strong>${email}</strong></span>`;
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 5000);
+}
+
 // ─── Excel Export ─────────────────────────────────────────────────────────────
 
 function buildSheetStyles(ws) {
@@ -1833,6 +2053,15 @@ function buildSheetStyles(ws) {
 }
 
 function exportToExcel() {
+  openEmailModal("all");
+}
+
+function exportRoleToExcel() {
+  if (!currentRole) return;
+  openEmailModal("role");
+}
+
+function _doExportToExcel(email, subject) {
   const wb = XLSX.utils.book_new();
   wb.Props = { Title: "Resource Utilization Report", Author: "IBM Consulting" };
 
@@ -1950,10 +2179,15 @@ function exportToExcel() {
   XLSX.utils.book_append_sheet(wb, wsRoster, "Consultant Roster");
 
   const ts = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `Resource_Utilization_Report_${ts}.xlsx`);
+  const fileName = `Resource_Utilization_Report_${ts}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+  _sendEmailNotification(email, subject, fileName,
+    ["Demand Summary", "Candidate Matches", "Consultant Roster"],
+    [demandRows.length, matchRows.length, rosterRows.length]
+  );
 }
 
-function exportRoleToExcel() {
+function _doExportRoleToExcel(email, subject) {
   if (!currentRole) return;
   const wb = XLSX.utils.book_new();
 
@@ -2022,7 +2256,12 @@ function exportRoleToExcel() {
 
   const safeName = r.projectName.replace(/[^a-z0-9]/gi, "_");
   const ts = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `${safeName}_Candidates_${ts}.xlsx`);
+  const fileName = `${safeName}_Candidates_${ts}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+  _sendEmailNotification(email, subject, fileName,
+    ["Role Summary", "Ranked Candidates"],
+    [roleSummaryRows.length, candRows.length]
+  );
 }
 
 // ─── Column Mapping Agent ─────────────────────────────────────────────────────
@@ -3015,6 +3254,10 @@ window.clearSidebarFilters = clearSidebarFilters;
 window.clearCandFilters = clearCandFilters;
 window.exportToExcel = exportToExcel;
 window.exportRoleToExcel = exportRoleToExcel;
+window.openEmailModal = openEmailModal;
+window.closeEmailModal = closeEmailModal;
+window.clearEmailError = clearEmailError;
+window.confirmEmailExport = confirmEmailExport;
 window.openUploadModal = openUploadModal;
 window.closeUploadModal = closeUploadModal;
 window.handleModalOverlayClick = handleModalOverlayClick;
