@@ -373,6 +373,25 @@
     }
     .narrative-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--purple); margin-bottom: 4px; font-style: normal; }
 
+    .allocation-alert {
+      background: var(--red-light);
+      border: 1px solid #fecaca;
+      border-left: 4px solid var(--red);
+      border-radius: 0 6px 6px 0;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+    .allocation-alert-title { color: var(--red); font-weight: 700; margin-bottom: 4px; }
+    .allocation-alert p { font-size: 12px; margin-bottom: 8px; }
+    .allocation-recommendations { display: flex; flex-wrap: wrap; gap: 6px; }
+    .allocation-recommendation {
+      background: var(--surface);
+      border: 1px solid #fecaca;
+      border-radius: 5px;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
     .risks-section { margin-bottom: 12px; }
     .risks-label { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
     .risk-item {
@@ -1288,6 +1307,7 @@
 
       <!-- Role summary card -->
       <div class="card" style="margin-bottom:20px;" id="role-summary-card"></div>
+      <div id="allocation-alert" aria-live="assertive"></div>
 
       <!-- Filter bar for candidates -->
       <div class="filter-bar" id="cand-filter-bar">
@@ -1750,6 +1770,32 @@ function renderRoleSummary() {
         ${r.requiredSkills.map(s => `<span class="skill-chip">${s}</span>`).join("")}
       </div>
     </div>`;
+  renderAllocationAlert();
+}
+
+function renderAllocationAlert() {
+  const alert = document.getElementById("allocation-alert");
+  const top = currentRankings[0];
+  if (!alert || !top || calcUtilization(top.consultant).status !== "over") {
+    if (alert) alert.innerHTML = "";
+    return;
+  }
+
+  const recommendations = currentRankings
+    .filter(result => result.consultant.id !== top.consultant.id && calcUtilization(result.consultant).status !== "over")
+    .slice(0, 3);
+  const recommendationHtml = recommendations.length > 0
+    ? recommendations.map(result => {
+        const util = calcUtilization(result.consultant);
+        return `<span class="allocation-recommendation"><strong>${result.consultant.name}</strong> · Match ${result.overallScore} · ${util.freeHours}h free</span>`;
+      }).join("")
+    : `<span style="font-size:12px;color:var(--muted);">No non-overallocated alternatives were found.</span>`;
+
+  alert.innerHTML = `<div class="allocation-alert">
+    <div class="allocation-alert-title">Error: ${top.consultant.name} is overallocated</div>
+    <p>This consultant should not be assigned to <strong>${currentRole.roleTitle}</strong>. Consider one of these best-fit alternatives:</p>
+    <div class="allocation-recommendations">${recommendationHtml}</div>
+  </div>`;
 }
 
 function renderCandidates() {
