@@ -473,6 +473,20 @@
     }
     .alloc-chip-over { background:var(--red-light); border-color:#fecaca; color:var(--red); }
 
+    .relief-candidate {
+      display:flex; align-items:flex-start; gap:10px;
+      padding:8px 10px; border-radius:6px; margin-bottom:6px;
+      border:1px solid var(--border); background:var(--surface); font-size:12px;
+    }
+    .relief-rank {
+      flex-shrink:0; width:20px; height:20px; border-radius:50%;
+      background:var(--bg); color:var(--muted); font-weight:700; font-size:11px;
+      display:flex; align-items:center; justify-content:center; margin-top:1px;
+    }
+    .relief-score {
+      flex-shrink:0; font-weight:700; font-size:12px; color:var(--green); margin-left:auto; white-space:nowrap;
+    }
+
     /* ── Empty state ── */
     .empty-state {
       text-align: center;
@@ -2676,6 +2690,76 @@ function buildUtilizationMap() {
 
 // ─── Rebalancing Engine ──────────────────────────────────────────────────────
 
+// Weights ordered to reflect the recommendation priority list: lowest current
+// utilization first, then role/band fit, then skill overlap, then org proximity.
+const RELIEF_WEIGHTS = { availability: 0.35, roleBand: 0.25, skills: 0.25, org: 0.15 };
+
+function reliefSkillMatch(candidate, overConsultant) {
+  const overSkills = overConsultant.skills.map(norm);
+  const shared = candidate.skills.filter(s => overSkills.includes(norm(s)));
+  const score = overSkills.length > 0 ? Math.round((shared.length / overSkills.length) * 100) : 0;
+  const reason = shared.length > 0
+    ? `${shared.length}/${overSkills.length} skills overlap: ${shared.slice(0, 4).join(", ")}${shared.length > 4 ? "…" : ""}`
+    : "No overlapping skills";
+  return { score, reason, shared };
+}
+
+function reliefRoleBandMatch(candidate, overConsultant) {
+  const jrsScore = scoreJRS(candidate, overConsultant).score;
+  const bandDiff = Math.abs(candidate.band - overConsultant.band);
+  const bandScore = bandDiff === 0 ? 100 : bandDiff === 1 ? 75 : bandDiff === 2 ? 50 : 25;
+  return Math.round((jrsScore + bandScore) / 2);
+}
+
+function reliefOrgProximity(candidate, overConsultant) {
+  if (candidate.dept && candidate.dept === overConsultant.dept) return 100;
+  const cState = candidate.location?.split(",")[1]?.trim();
+  const oState = overConsultant.location?.split(",")[1]?.trim();
+  if (cState && oState && cState === oState) return 70;
+  return 40;
+}
+
+/**
+ * Find alternative candidates who could absorb work from an overallocated
+ * consultant, ranked by a composite 0-100 recommendation score.
+ * Reuses the utilization map already built for the dashboard render — no
+ * duplicate utilization calculation.
+ */
+function findReliefCandidates(overRecord, utilMap) {
+  const { consultant: overConsultant, util: overUtil } = overRecord;
+  const excessHours = overUtil.allocatedHours - overUtil.capacityHours;
+
+  return utilMap
+    .filter(({ consultant: c }) => c.id !== overConsultant.id)
+    .filter(({ util }) => util.freeHours > 0)
+    .map(({ consultant: c, util }) => {
+      const reassignHours = Math.min(excessHours, util.freeHours);
+      const estAllocatedHours = util.allocatedHours + reassignHours;
+      const estPct = util.capacityHours > 0 ? Math.round((estAllocatedHours / util.capacityHours) * 100) : 0;
+      const skillMatch = reliefSkillMatch(c, overConsultant);
+      const availabilityScore = Math.max(0, 100 - util.pct);
+      const roleBandScore = reliefRoleBandMatch(c, overConsultant);
+      const orgScore = reliefOrgProximity(c, overConsultant);
+      const recommendationScore = Math.round(
+        availabilityScore * RELIEF_WEIGHTS.availability +
+        roleBandScore * RELIEF_WEIGHTS.roleBand +
+        skillMatch.score * RELIEF_WEIGHTS.skills +
+        orgScore * RELIEF_WEIGHTS.org
+      );
+      return {
+        consultant: c,
+        currentUtil: util,
+        reassignHours,
+        estPct,
+        skillMatchReason: skillMatch.reason,
+        recommendationScore,
+      };
+    })
+    .filter(rc => rc.estPct <= UTIL_OVER)
+    .sort((a, b) => b.recommendationScore - a.recommendationScore)
+    .slice(0, 3);
+}
+
 /**
  * Generate rebalancing actions. Each action has:
  *   { priority, type, consultant, detail, suggestedRole? }
@@ -2704,6 +2788,7 @@ function buildRebalancingActions(utilMap) {
         suggestion: soonestEnd
           ? `Consider rolling off "${soonestEnd.projectName}" (ending ${soonestEnd.endDate}) to bring within capacity.`
           : "Review allocations and remove or reduce one engagement.",
+        reliefCandidates: findReliefCandidates({ consultant: c, util }, utilMap),
       });
     }
 
@@ -2763,6 +2848,13 @@ function utilBarColor(status) {
   if (status === "full")    return "var(--green)";
   if (status === "partial") return "var(--yellow)";
   return "var(--muted)";
+}
+
+function utilStatusForPct(pct) {
+  if (pct <= 0)             return "bench";
+  if (pct > UTIL_OVER)      return "over";
+  if (pct >= UTIL_FULL_LO)  return "full";
+  return "partial";
 }
 
 function utilStatusBadge(status, pct) {
@@ -2865,6 +2957,22 @@ function renderUtilizationDashboard() {
               <div style="flex:1;"><strong>${al.projectName}</strong><span style="color:var(--muted);margin-left:6px;">${al.client}</span></div>
               <div style="color:var(--muted);">${al.startDate} → ${al.endDate || "ongoing"}</div>
               <span class="alloc-chip ${al.weeklyHours + (a.util.allocatedHours - al.weeklyHours) > a.util.capacityHours && a.util.status === "over" ? "alloc-chip-over" : ""}">${al.weeklyHours}h/wk</span>
+            </div>`).join("")}` : ""}
+          ${a.reliefCandidates ? `
+          <div style="font-size:12px;font-weight:700;margin:10px 0 6px;">Suggested Relief Candidates</div>
+          ${a.reliefCandidates.length === 0 ? `
+          <div style="font-size:12px;color:var(--muted);font-style:italic;">No eligible candidate found.</div>` :
+          a.reliefCandidates.map((rc, rIdx) => `
+            <div class="relief-candidate">
+              <span class="relief-rank">${rIdx + 1}</span>
+              <div style="flex:1;">
+                <div style="font-weight:700;">${rc.consultant.name}
+                  <span style="font-weight:400;color:var(--muted);margin-left:6px;">${rc.consultant.jrs} · Band ${rc.consultant.band}</span>
+                </div>
+                <div style="color:var(--muted);margin-top:2px;">Current: ${rc.currentUtil.pct}% utilized · ${rc.skillMatchReason}</div>
+                <div style="color:${utilBarColor(utilStatusForPct(rc.estPct))};margin-top:2px;font-weight:600;">Est. after reassignment: ${rc.estPct}% (+${rc.reassignHours}h/wk)</div>
+              </div>
+              <span class="relief-score" title="Recommendation score">${rc.recommendationScore}</span>
             </div>`).join("")}` : ""}
           ${a.topRole ? `
           <div style="margin-top:10px;">
