@@ -1,0 +1,101 @@
+Active Consultants (Not On Bench)
+Generated from: sample_consultants.xlsx
+=====================================
+
+1. Devon Clarke — Band 6 · Application Developer
+   - Digital Transformation @ BlueRidge Energy
+     Apr 1, 2026 → Oct 1, 2026
+
+2. Priya Nair — Band 9 · AI/ML Specialist
+   - AI Demand Forecasting @ Apex Logistics
+     Feb 1, 2026 → Oct 25, 2027
+   - Internal ML Platform @ IBM Internal
+     May 1, 2026 → Dec 31, 2026
+
+3. Yuki Tanaka — Band 8 · Data Engineer
+   - Azure Data Warehouse @ Paramount Retail
+     Mar 10, 2026 → Sep 10, 2026
+
+4. Fatima Al-Rashid — Band 6 · Application Developer
+   - Core Banking API @ Meridian Financial Group
+     Jan 1, 2026 → Sep 20, 2026
+   - Security Audit Support @ IBM Internal
+     Aug 1, 2026 → Sep 30, 2026
+
+5. Carlos Rivera — Band 7 · AI/ML Specialist
+   - Demand Analytics Platform @ Apex Logistics
+     Jan 15, 2026 → Nov 1, 2026
+   - NLP Research Initiative @ IBM Internal
+     Apr 1, 2026 → Jan 31, 2027
+
+6. Lisa Chen — Band 7 · Data Engineer
+   - Health Data Lake @ NovaTech Healthcare
+     Mar 1, 2026 → Oct 15, 2026
+   - Data Quality Initiative @ IBM Internal
+     Aug 1, 2026 → (ongoing)
+
+7. Anika Sharma — Band 6 · Application Developer
+   - Campus Portal Redesign @ EduPath Inc
+     May 15, 2026 → Dec 1, 2026
+
+8. Ryan Castellano — Band 6 · Application Developer
+   - Digital Banking Platform @ TrustLine Banking
+     Jun 1, 2026 → Feb 1, 2027
+
+9. Hana Kimura — Band 8 · AI/ML Specialist
+   - Clinical Notes AI @ BioScript Labs
+     May 1, 2026 → Jan 15, 2027
+
+10. Sophia Reeves — Band 7 · Application Developer
+    - Learning Experience Platform @ EduPath Inc
+      Jun 1, 2026 → Dec 31, 2026
+
+11. Omar Khalil — Band 9 · Data Engineer
+    - Secure Analytics Hub @ DefenseLink Systems
+      Jul 1, 2026 → Mar 1, 2027
+    - Data Quality Initiative @ IBM Internal
+      Sep 1, 2026 → Jan 31, 2027
+
+12. Priscilla Nakamura — Band 8 · AI/ML Specialist
+    - Conversational Commerce @ ShopSmart Retail
+      Jun 1, 2026 → Jan 31, 2027
+
+13. Kwame Asante — Band 8 · Data Engineer
+    - Patient Data Lakehouse @ HealthFirst Network
+      Jul 15, 2026 → Feb 15, 2027
+
+14. Nadia Petrov — Band 6 · Application Developer
+    - Student Engagement Hub @ OpenLearn Foundation
+      Jun 1, 2026 → Nov 30, 2026
+
+15. Isaiah Washington — Band 9 · AI/ML Specialist
+    - Risk Prediction Engine @ Vantage Insurance
+      Jul 1, 2026 → Apr 1, 2027
+
+16. Brianna Osei — Band 7 · Data Engineer
+    - Demand Intelligence Platform @ RetailNova Group
+      Aug 1, 2026 → Feb 28, 2027
+
+17. Fatou Diallo — Band 6 · Application Developer
+    - Digital Banking Platform @ TrustLine Banking
+      Sep 1, 2026 → Mar 15, 2027
+    - Compliance Automation @ Vantage Insurance
+      Sep 15, 2026 → Feb 28, 2027
+
+18. Luca Romano — Band 7 · AI/ML Specialist
+    - Predictive Maintenance Platform @ MidWest Power Co
+      May 1, 2026 → Nov 30, 2026
+
+19. Yewande Adeyemi — Band 8 · Cloud Solution Architect
+    - Grid Modernization Initiative @ MidWest Power Co
+      Aug 1, 2026 → May 1, 2027
+
+20. Chen Wei — Band 9 · Data Engineer
+    - Secure Analytics Hub @ DefenseLink Systems
+      Jul 1, 2026 → Jun 1, 2027
+    - Streaming Data Platform @ IBM Internal
+      Oct 1, 2026 → Mar 31, 2027
+
+=====================================
+Total active: 20 consultants
+Total on bench: 12 consultants

@@ -44,6 +44,7 @@ For a selected open role, the application:
 - Flags staffing risks such as missing skills, missing certifications, stale CVs, availability conflicts, location conflicts, band mismatches, and industry gaps.
 - Filters candidates by minimum score, band, availability window, travel willingness, and availability date range.
 - Exports the selected role and its ranked candidates to Excel.
+- Shows an expandable **📄 CV Profile** panel on each candidate card when CV data is present. The panel displays summary, education, up to three experience roles, key achievements, certifications, core skills, languages, and the CV's last-updated date. CV data is loaded from the `CVs` sheet of an uploaded Excel workbook.
 
 ### Utilization Dashboard
 
@@ -82,11 +83,12 @@ It provides:
 
 Utilization is calculated in this order:
 
-1. If `currentAllocations` contains assignments, allocated hours are summed and divided by `weeklyCapacity`.
-2. If no detailed allocations exist, `utilizationPercentage` is used.
-3. If neither is supplied, `assignmentStatus` provides a fallback: `Active` = 100%, `Project Ending` = 50%, and other values = 0%.
+1. **Weekly Hours sheet average** — if the uploaded Excel workbook contains a `Weekly Hours` sheet, the app averages each consultant's billable and non-billable hours across all weeks present and uses that total as the authoritative allocated-hours figure. The breakdown (billable vs. non-billable, number of weeks) is shown inline in the expanded row.
+2. If no Weekly Hours sheet is present but `currentAllocations` contains assignments, allocated hours are summed and divided by `weeklyCapacity`.
+3. If no detailed allocations exist, `utilizationPercentage` is used.
+4. If none of the above is supplied, `assignmentStatus` provides a fallback: `Active` = 100%, `Project Ending` = 50%, and other values = 0%.
 
-`weeklyCapacity` defaults to 40 hours when omitted.
+`weeklyCapacity` defaults to 40 hours when omitted. When a utilization figure is estimated from the fallback heuristic rather than real allocation data, the UI labels it **~ estimated** so reviewers can identify it at a glance.
 
 ### Rebalancing Recommendations
 
@@ -220,6 +222,10 @@ When detailed allocations are supplied, their hours take precedence over `utiliz
 
 SheetJS powers workbook import and export.
 
+### Export and email notification
+
+Both export buttons open a modal that asks for an email address and an optional subject line before downloading. After the file downloads, the app opens the system default mail client pre-populated with the recipient address, subject, a plain-text download summary (file name, export timestamp, sheet names, and row counts), and the Excel file as an attachment. The email step can be cancelled; the file still downloads.
+
 ### Full report
 
 **Export to Excel** or **Export All** creates `Resource_Utilization_Report_YYYY-MM-DD.xlsx` with:
@@ -253,14 +259,14 @@ An internet connection is required to load SheetJS from its HTTPS CDN for Excel/
 
 ## Sample Data Files
 
-The repository includes two ready-to-use CSV files for testing the upload workflow:
+The repository includes ready-to-use sample files for testing the upload workflow:
 
 | File | Contents |
 |---|---|
-| `sample_consultants.csv` | 12 consultants across all three departments with varied utilization: bench, underutilized, fully utilized, and overallocated |
+| `sample_consultants.xlsx` | 32 consultants across all three departments with varied utilization: bench, underutilized, fully utilized, and overallocated. Includes a **CVs sheet** with full fake CV profiles (summary, education, 3 roles, achievements, certifications, skills, languages) for every consultant. Also includes a **Weekly Hours sheet** with per-consultant billable and non-billable hour history, used as the Priority 1 utilization source. |
 | `sample_project_demand.csv` | 10 open roles across new clients and projects not present in the built-in sample data |
 
-Both files use the exact internal field keys as column headers, so they upload without triggering the Column Mapping Agent. See the schema sections below for a description of every supported field.
+Both files use the exact internal field keys as column headers, so they upload without triggering the Column Mapping Agent. The **Consultants sheet** of the Excel file maps directly to the upload schema. See the schema sections below for a description of every supported field.
 
 ## Project Structure
 
@@ -268,7 +274,7 @@ Both files use the exact internal field keys as column headers, so they upload w
 .
 ├── index.html                    # Complete browser UI and active application logic
 ├── README.md                     # Project documentation
-├── sample_consultants.csv        # Sample consultant upload file
+├── sample_consultants.xlsx       # Sample consultant upload file (with CVs sheet)
 ├── sample_project_demand.csv     # Sample project demand upload file
 ├── src/
 │   ├── data/
@@ -276,7 +282,7 @@ Both files use the exact internal field keys as column headers, so they upload w
 │   │   └── roles.js              # Reference sample role data
 │   └── engine/
 │       └── scorer.js             # Reference modular scoring engine
-└── test.py                       # Repository test script
+└── test.py                       # Placeholder test script (currently empty)
 ```
 
 The running application is implemented in `index.html`. Files under `src/` provide modular reference data and scoring code but are not imported by the page.

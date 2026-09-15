@@ -394,6 +394,20 @@
     }
     .risks-section { margin-bottom: 12px; }
     .risks-label { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+
+    /* ── CV Panel ── */
+    .cv-panel { border: 1px solid var(--border); border-radius: 6px; margin-top: 14px; overflow: hidden; }
+    .cv-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; font-size: 12px; font-weight: 700; color: var(--text); cursor: pointer; background: var(--surface); user-select: none; }
+    .cv-panel-header:hover { background: var(--border); }
+    .cv-chevron { flex-shrink: 0; transition: transform .2s; }
+    .cv-panel-body { display: none; padding: 14px 16px; border-top: 1px solid var(--border); }
+    .cv-panel-body.open { display: block; }
+    .cv-section { margin-bottom: 12px; }
+    .cv-section:last-child { margin-bottom: 0; }
+    .cv-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 4px; }
+    .cv-text { font-size: 12px; color: var(--text); line-height: 1.55; }
+    .cv-exp-row { display: flex; gap: 8px; margin-bottom: 6px; }
+    .cv-exp-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 5px; }
     .risk-item {
       display: flex;
       align-items: flex-start;
@@ -1402,21 +1416,21 @@
           <div class="stat-value" id="stat-avg-util">—</div>
           <div class="stat-sub">Across all consultants</div>
         </div>
-        <div class="stat-card" style="border-left:3px solid var(--red);">
-          <div class="stat-label">Overallocated</div>
-          <div class="stat-value" id="stat-over-count" style="color:var(--red);">—</div>
-          <div class="stat-sub">Above 100% capacity</div>
-        </div>
-        <div class="stat-card" style="border-left:3px solid var(--yellow);">
-          <div class="stat-label">Underutilized</div>
-          <div class="stat-value" id="stat-under-count" style="color:var(--yellow);">—</div>
-          <div class="stat-sub">Below 70% capacity</div>
-        </div>
-        <div class="stat-card" style="border-left:3px solid var(--muted);">
-          <div class="stat-label">On Bench</div>
-          <div class="stat-value" id="stat-bench-count">—</div>
-          <div class="stat-sub">Zero current allocations</div>
-        </div>
+        <div class="stat-card" style="border-left:3px solid var(--red);cursor:pointer;" onclick="filterUtilizationTo('over')" title="Click to filter by Overallocated">
+            <div class="stat-label">Overallocated</div>
+            <div class="stat-value" id="stat-over-count" style="color:var(--red);">—</div>
+            <div class="stat-sub">Above 100% capacity</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--yellow);cursor:pointer;" onclick="filterUtilizationTo('partial')" title="Click to filter by Underutilized">
+            <div class="stat-label">Underutilized</div>
+            <div class="stat-value" id="stat-under-count" style="color:var(--yellow);">—</div>
+            <div class="stat-sub">Below 70% capacity</div>
+          </div>
+          <div class="stat-card" style="border-left:3px solid var(--muted);cursor:pointer;" onclick="filterUtilizationTo('bench')" title="Click to show bench consultants">
+            <div class="stat-label">On Bench</div>
+            <div class="stat-value" id="stat-bench-count">—</div>
+            <div class="stat-sub">Zero current allocations</div>
+          </div>
       </div>
 
       <!-- Rebalancing actions -->
@@ -1457,26 +1471,31 @@
 <script type="module">
 // ─── Data ───────────────────────────────────────────────────────────────────
 
-const consultants = [
+const SAMPLE_CONSULTANTS = [
   { id:"C001", name:"Arjun Mehta", band:8, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["AWS","Kubernetes","Terraform","Python","Solution Architecture","DevOps"], certifications:["AWS Solutions Architect Professional","CKA"], cvExists:true, cvRecencyMonths:2, availabilityDate:"2026-09-01", location:"Austin, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Telecommunications","Public Sector"], weeklyCapacity:40, currentAllocations:[] },
   { id:"C002", name:"Maria Santos", band:7, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","Spark","SQL","Databricks","Azure","ETL","Data Pipelines"], certifications:["Azure Data Engineer Associate"], cvExists:true, cvRecencyMonths:5, availabilityDate:"2026-09-15", location:"Chicago, IL", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Healthcare","Life Sciences","Insurance"], weeklyCapacity:40, currentAllocations:[] },
   { id:"C003", name:"Devon Clarke", band:6, jrs:"Application Developer", dept:"Application Modernization", manager:"Rachel Kim", skills:["React","Node.js","TypeScript","REST APIs","PostgreSQL"], certifications:[], cvExists:true, cvRecencyMonths:14, availabilityDate:"2026-10-01", location:"Atlanta, GA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false, industries:["K-12 Education","Higher Education","Non-Profit"], weeklyCapacity:40, currentAllocations:[{ projectName:"Digital Transformation", client:"BlueRidge Energy", weeklyHours:20, startDate:"2026-07-01", endDate:"2026-10-01" }] },
-  { id:"C004", name:"Priya Nair", band:9, jrs:"AI/ML Specialist", dept:"Data & AI", manager:"James Okafor", skills:["Python","TensorFlow","PyTorch","NLP","LLMs","MLOps","AWS"], certifications:["AWS Machine Learning Specialty","Google Cloud Professional ML Engineer"], cvExists:true, cvRecencyMonths:1, availabilityDate:"2026-08-25", location:"San Jose, CA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Technology","Retail","Supply Chain & Logistics"], weeklyCapacity:40, currentAllocations:[{ projectName:"AI Demand Forecasting", client:"Apex Logistics", weeklyHours:40, startDate:"2026-06-01", endDate:"2026-08-25" }, { projectName:"Internal ML Platform", client:"IBM Internal", weeklyHours:10, startDate:"2026-07-01", endDate:"2026-12-31" }] },
+  { id:"C004", name:"Priya Nair", band:9, jrs:"AI/ML Specialist", dept:"Data & AI", manager:"James Okafor", skills:["Python","TensorFlow","PyTorch","NLP","LLMs","MLOps","AWS"], certifications:["AWS Machine Learning Specialty","Google Cloud Professional ML Engineer"], cvExists:true, cvRecencyMonths:1, availabilityDate:"2026-08-25", location:"San Jose, CA", travelWillingness:true, assignmentStatus:"Active", benchStatus:false, industries:["Technology","Retail","Supply Chain & Logistics"], weeklyCapacity:40, currentAllocations:[{ projectName:"AI Demand Forecasting", client:"Apex Logistics", weeklyHours:40, startDate:"2026-06-01", endDate:"2026-08-25" }, { projectName:"Internal ML Platform", client:"IBM Internal", weeklyHours:10, startDate:"2026-07-01", endDate:"2026-12-31" }] },
   { id:"C005", name:"James Whitfield", band:7, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["AWS","Azure","Terraform","Solution Architecture","Security"], certifications:["AWS Solutions Architect Associate"], cvExists:false, cvRecencyMonths:null, availabilityDate:"2026-09-05", location:"Dallas, TX", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Energy & Utilities","Oil & Gas"], weeklyCapacity:40, currentAllocations:[] },
-  { id:"C006", name:"Yuki Tanaka", band:8, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","Spark","Databricks","Snowflake","dbt","SQL","Kafka","Azure"], certifications:["Azure Data Engineer Associate","Databricks Certified Associate"], cvExists:true, cvRecencyMonths:3, availabilityDate:"2026-09-10", location:"Seattle, WA", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Retail","Technology","Healthcare"], weeklyCapacity:40, currentAllocations:[{ projectName:"Azure Data Warehouse", client:"Paramount Retail", weeklyHours:32, startDate:"2026-07-15", endDate:"2026-09-10" }] },
-  { id:"C007", name:"Fatima Al-Rashid", band:6, jrs:"Application Developer", dept:"Application Modernization", manager:"Rachel Kim", skills:["Java","Spring Boot","Kubernetes","REST APIs","PostgreSQL","Docker"], certifications:["CKA"], cvExists:true, cvRecencyMonths:7, availabilityDate:"2026-09-20", location:"New York, NY", travelWillingness:false, assignmentStatus:"Bench", benchStatus:true, industries:["Financial Services","Insurance","Public Sector"], weeklyCapacity:40, currentAllocations:[{ projectName:"Core Banking API", client:"Meridian Financial Group", weeklyHours:40, startDate:"2026-05-01", endDate:"2026-09-20" }, { projectName:"Security Audit Support", client:"IBM Internal", weeklyHours:8, startDate:"2026-08-01", endDate:"2026-09-30" }] },
+  { id:"C006", name:"Yuki Tanaka", band:8, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","Spark","Databricks","Snowflake","dbt","SQL","Kafka","Azure"], certifications:["Azure Data Engineer Associate","Databricks Certified Associate"], cvExists:true, cvRecencyMonths:3, availabilityDate:"2026-09-10", location:"Seattle, WA", travelWillingness:true, assignmentStatus:"Project Ending", benchStatus:false, industries:["Retail","Technology","Healthcare"], weeklyCapacity:40, currentAllocations:[{ projectName:"Azure Data Warehouse", client:"Paramount Retail", weeklyHours:32, startDate:"2026-07-15", endDate:"2026-09-10" }] },
+  { id:"C007", name:"Fatima Al-Rashid", band:6, jrs:"Application Developer", dept:"Application Modernization", manager:"Rachel Kim", skills:["Java","Spring Boot","Kubernetes","REST APIs","PostgreSQL","Docker"], certifications:["CKA"], cvExists:true, cvRecencyMonths:7, availabilityDate:"2026-09-20", location:"New York, NY", travelWillingness:false, assignmentStatus:"Active", benchStatus:false, industries:["Financial Services","Insurance","Public Sector"], weeklyCapacity:40, currentAllocations:[{ projectName:"Core Banking API", client:"Meridian Financial Group", weeklyHours:40, startDate:"2026-05-01", endDate:"2026-09-20" }, { projectName:"Security Audit Support", client:"IBM Internal", weeklyHours:8, startDate:"2026-08-01", endDate:"2026-09-30" }] },
   { id:"C008", name:"Carlos Rivera", band:7, jrs:"AI/ML Specialist", dept:"Data & AI", manager:"James Okafor", skills:["Python","scikit-learn","TensorFlow","NLP","Data Analysis","SQL"], certifications:[], cvExists:true, cvRecencyMonths:20, availabilityDate:"2026-11-01", location:"Miami, FL", travelWillingness:true, assignmentStatus:"Active", benchStatus:false, industries:["Supply Chain & Logistics","Retail","Manufacturing"], weeklyCapacity:40, currentAllocations:[{ projectName:"Demand Analytics Platform", client:"Apex Logistics", weeklyHours:40, startDate:"2026-04-01", endDate:"2026-11-01" }, { projectName:"NLP Research Initiative", client:"IBM Internal", weeklyHours:15, startDate:"2026-06-01", endDate:"2027-01-31" }] },
   { id:"C009", name:"Amara Osei", band:8, jrs:"Cloud Solution Architect", dept:"Cloud & Platform", manager:"Sandra Lee", skills:["GCP","Kubernetes","Terraform","Python","Solution Architecture","Security","Networking"], certifications:["GCP Professional Cloud Architect","CKA"], cvExists:true, cvRecencyMonths:4, availabilityDate:"2026-09-01", location:"Washington, DC", travelWillingness:true, assignmentStatus:"Bench", benchStatus:true, industries:["Public Sector","Defense","Telecommunications"], weeklyCapacity:40, currentAllocations:[] },
-  { id:"C010", name:"Lisa Chen", band:7, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","SQL","Databricks","Azure","Power BI"], certifications:[], cvExists:true, cvRecencyMonths:9, availabilityDate:"2026-10-15", location:"Boston, MA", travelWillingness:false, assignmentStatus:"Project Ending", benchStatus:false, industries:["Healthcare","Life Sciences","Higher Education"], weeklyCapacity:40, currentAllocations:[{ projectName:"Health Data Lake", client:"NovaTech Healthcare", weeklyHours:32, startDate:"2026-05-01", endDate:"2026-10-15" }] },
+  { id:"C010", name:"Lisa Chen", band:7, jrs:"Data Engineer", dept:"Data & AI", manager:"James Okafor", skills:["Python","SQL","Databricks","Azure","Power BI"], certifications:[], cvExists:true, cvRecencyMonths:9, availabilityDate:"2026-10-15", location:"Boston, MA", travelWillingness:false, assignmentStatus:"Active", benchStatus:false, industries:["Healthcare","Life Sciences","Higher Education"], weeklyCapacity:40, currentAllocations:[{ projectName:"Health Data Lake", client:"NovaTech Healthcare", weeklyHours:32, startDate:"2026-05-01", endDate:"2026-10-15" }, { projectName:"Data Quality Initiative", client:"IBM Internal", weeklyHours:12, startDate:"2026-08-01", endDate:"2026-12-31" }] },
 ];
 
-const roles = [
+// Live data arrays — start empty; populated from localStorage or sample data at boot
+const consultants = [];
+
+const SAMPLE_ROLES = [
   { id:"R001", seatId:"TR-4821", client:"Meridian Financial Group", projectName:"Cloud Migration Program", dept:"Cloud & Platform", manager:"Sandra Lee", quarter:"Q3 2026", roleTitle:"Senior Cloud Architect", jrs:"Cloud Solution Architect", bandMin:7, bandMax:9, requiredSkills:["AWS","Terraform","Solution Architecture","Kubernetes"], niceToHaveSkills:["Python","DevOps","Security"], certifications:["AWS Solutions Architect Professional"], startDate:"2026-09-15", endDate:"2027-03-15", weeklyHours:40, location:"Austin, TX", travelRequired:true, contractSigned:true, status:"Open", requiredIndustry:"Financial Services", niceToHaveIndustries:["Insurance","Public Sector"] },
   { id:"R002", seatId:"TR-4905", client:"NovaTech Healthcare", projectName:"Data Platform Modernization", dept:"Data & AI", manager:"James Okafor", quarter:"Q3 2026", roleTitle:"Senior Data Engineer", jrs:"Data Engineer", bandMin:7, bandMax:8, requiredSkills:["Python","Spark","SQL","Databricks","ETL"], niceToHaveSkills:["Azure","dbt","Kafka","Snowflake"], certifications:["Azure Data Engineer Associate"], startDate:"2026-09-20", endDate:"2027-06-20", weeklyHours:40, location:"Chicago, IL", travelRequired:false, contractSigned:true, status:"Open", requiredIndustry:"Healthcare", niceToHaveIndustries:["Life Sciences","Insurance"] },
   { id:"R003", seatId:"TR-5012", client:"Apex Logistics", projectName:"AI Demand Forecasting", dept:"Data & AI", manager:"James Okafor", quarter:"Q3 2026", roleTitle:"AI/ML Engineer", jrs:"AI/ML Specialist", bandMin:8, bandMax:9, requiredSkills:["Python","TensorFlow","NLP","MLOps","LLMs"], niceToHaveSkills:["AWS","PyTorch","Kubernetes"], certifications:["AWS Machine Learning Specialty"], startDate:"2026-09-01", endDate:"2027-02-28", weeklyHours:40, location:"San Francisco, CA", travelRequired:true, contractSigned:true, status:"Open", requiredIndustry:"Supply Chain & Logistics", niceToHaveIndustries:["Retail","Manufacturing"] },
   { id:"R004", seatId:"TR-5103", client:"BlueRidge Energy", projectName:"Digital Transformation", dept:"Application Modernization", manager:"Rachel Kim", quarter:"Q4 2026", roleTitle:"Full-Stack Developer", jrs:"Application Developer", bandMin:6, bandMax:7, requiredSkills:["React","Node.js","REST APIs","PostgreSQL"], niceToHaveSkills:["TypeScript","Docker","Kubernetes"], certifications:[], startDate:"2026-10-01", endDate:"2027-03-31", weeklyHours:40, location:"Atlanta, GA", travelRequired:false, contractSigned:false, status:"Open", requiredIndustry:"K-12 Education", niceToHaveIndustries:["Higher Education","Public Sector"] },
   { id:"R005", seatId:"TR-5218", client:"Paramount Retail", projectName:"Azure Data Warehouse", dept:"Data & AI", manager:"James Okafor", quarter:"Q4 2026", roleTitle:"Data Platform Engineer", jrs:"Data Engineer", bandMin:7, bandMax:9, requiredSkills:["Python","Azure","SQL","Databricks"], niceToHaveSkills:["Snowflake","dbt","Power BI","Kafka"], certifications:[], startDate:"2026-10-10", endDate:"2027-04-10", weeklyHours:32, location:"Seattle, WA", travelRequired:false, contractSigned:true, status:"Open", requiredIndustry:"Retail", niceToHaveIndustries:["Technology","Supply Chain & Logistics"] },
 ];
+
+const roles = [];
 
 // ─── Scoring Engine ──────────────────────────────────────────────────────────
 
@@ -1932,6 +1951,28 @@ function renderCandidates() {
           <div class="risks-label">Risk &amp; Gap Analysis</div>
           ${riskHtml}
         </div>
+
+        ${c.cv ? `
+        <div class="cv-panel">
+          <div class="cv-panel-header" onclick="toggleCVPanel('${c.id}')">
+            <span>📄 CV Profile</span>
+            <svg class="cv-chevron" id="cv-chevron-${c.id}" width="14" height="14" viewBox="0 0 16 16" fill="var(--muted)"><path d="M4 6l4 4 4-4"/></svg>
+          </div>
+          <div class="cv-panel-body" id="cv-body-${c.id}">
+            ${c.cv.summary ? `<div class="cv-section"><div class="cv-section-label">Summary</div><div class="cv-text">${c.cv.summary}</div></div>` : ""}
+            ${c.cv.education ? `<div class="cv-section"><div class="cv-section-label">Education</div><div class="cv-text">${c.cv.education}</div></div>` : ""}
+            ${(c.cv.experience1 || c.cv.experience2 || c.cv.experience3) ? `
+            <div class="cv-section">
+              <div class="cv-section-label">Experience</div>
+              ${c.cv.experience1 ? `<div class="cv-exp-row"><span class="cv-exp-dot"></span><div class="cv-text">${c.cv.experience1}</div></div>` : ""}
+              ${c.cv.experience2 ? `<div class="cv-exp-row"><span class="cv-exp-dot"></span><div class="cv-text">${c.cv.experience2}</div></div>` : ""}
+              ${c.cv.experience3 ? `<div class="cv-exp-row"><span class="cv-exp-dot"></span><div class="cv-text">${c.cv.experience3}</div></div>` : ""}
+            </div>` : ""}
+            ${c.cv.achievements ? `<div class="cv-section"><div class="cv-section-label">Key Achievements</div><div class="cv-text">${c.cv.achievements}</div></div>` : ""}
+            ${c.cv.languages ? `<div class="cv-section"><div class="cv-section-label">Languages</div><div class="cv-text">${c.cv.languages}</div></div>` : ""}
+            ${c.cv.lastUpdated ? `<div class="cv-section"><div class="cv-section-label">CV Last Updated</div><div class="cv-text" style="color:var(--muted)">${(() => { const d = new Date(c.cv.lastUpdated); return isNaN(d) ? c.cv.lastUpdated : d.toLocaleDateString("en-US", {year:"numeric",month:"long",day:"numeric"}); })()}</div></div>` : ""}
+          </div>
+        </div>` : ""}
       </div>
     </div>`;
   }).join("");
@@ -1940,6 +1981,14 @@ function renderCandidates() {
 function toggleCandidate(id) {
   const body = document.getElementById(`body-${id}`);
   const chevron = document.getElementById(`chevron-${id}`);
+  const isOpen = body.classList.contains("open");
+  body.classList.toggle("open", !isOpen);
+  chevron.style.transform = isOpen ? "rotate(0deg)" : "rotate(180deg)";
+}
+
+function toggleCVPanel(id) {
+  const body = document.getElementById(`cv-body-${id}`);
+  const chevron = document.getElementById(`cv-chevron-${id}`);
   const isOpen = body.classList.contains("open");
   body.classList.toggle("open", !isOpen);
   chevron.style.transform = isOpen ? "rotate(0deg)" : "rotate(180deg)";
@@ -2437,10 +2486,10 @@ function autoMapColumns(fieldDefs, actualHeaders, sampleRow) {
 
 // ── Mapping modal state ─────────────────────────────────────────────────────
 
-let _mappingState = null; // { type, rows, fieldDefs, mappings, actualHeaders }
+let _mappingState = null; // { type, rows, fieldDefs, mappings, actualHeaders, cvMap, weeklyMap }
 
-function openMappingModal(type, rows, fieldDefs, mappings, actualHeaders) {
-  _mappingState = { type, rows, fieldDefs, mappings, actualHeaders };
+function openMappingModal(type, rows, fieldDefs, mappings, actualHeaders, cvMap = {}, weeklyMap = {}) {
+  _mappingState = { type, rows, fieldDefs, mappings, actualHeaders, cvMap, weeklyMap };
   const sampleRow = rows[0] || {};
 
   document.getElementById("mapping-subtitle").textContent =
@@ -2503,7 +2552,7 @@ function closeMappingModal() {
 
 function confirmMapping() {
   if (!_mappingState) return;
-  const { type, rows, fieldDefs, mappings } = _mappingState;
+  const { type, rows, fieldDefs, mappings, cvMap = {}, weeklyMap = {} } = _mappingState;
 
   // Validate all required fields are mapped
   const missing = mappings.filter(m => m.fieldDef.required && !m.sourceColumn).map(m => m.fieldDef.label);
@@ -2537,7 +2586,7 @@ function confirmMapping() {
   try {
     let parsed;
     if (type === "consultants") {
-      parsed = parseConsultantRows(remappedRows);
+      parsed = parseConsultantRows(remappedRows, cvMap, weeklyMap);
       _pendingData.consultants = parsed;
       statusEl.className = "file-status success";
       statusEl.textContent = `✓ ${parsed.length} consultant records loaded (column mapping applied)`;
@@ -2583,7 +2632,69 @@ function sheetToRows(wb, sheetIndex = 0) {
   return XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: "" });
 }
 
-function parseConsultantRows(rows) {
+/**
+ * If the workbook contains a "Weekly Hours" sheet, compute the average billable
+ * and non-billable hours per consultant. Returns a map of
+ * consultant ID → { avgBillable, avgNonBillable, weekCount }
+ */
+function parseWeeklyHoursSheet(wb) {
+  const sheetName = wb.SheetNames.find(n => n.trim().toLowerCase() === "weekly hours");
+  if (!sheetName) return {};
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: "" });
+  const totals = {};
+  rows.forEach(r => {
+    const id = String(r["Consultant ID"] || r["consultantId"] || r["id"] || "").trim();
+    if (!id) return;
+    const billable    = parseFloat(r["Billable Hours"]     || r["billableHours"]    || 0) || 0;
+    const nonBillable = parseFloat(r["Non-Billable Hours"] || r["nonBillableHours"] || 0) || 0;
+    if (!totals[id]) totals[id] = { sumBillable: 0, sumNonBillable: 0, count: 0 };
+    totals[id].sumBillable    += billable;
+    totals[id].sumNonBillable += nonBillable;
+    totals[id].count          += 1;
+  });
+  const map = {};
+  Object.entries(totals).forEach(([id, t]) => {
+    map[id] = {
+      avgBillable:    t.count > 0 ? t.sumBillable    / t.count : 0,
+      avgNonBillable: t.count > 0 ? t.sumNonBillable / t.count : 0,
+      weekCount:      t.count,
+    };
+  });
+  return map;
+}
+
+/**
+ * If the workbook contains a "CVs" sheet, parse it into a map of
+ * consultant ID → cv object. Returns an empty object if no CVs sheet exists.
+ */
+function parseCVSheet(wb) {
+  const cvSheetName = wb.SheetNames.find(n => n.trim().toLowerCase() === "cvs");
+  if (!cvSheetName) return {};
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[cvSheetName], { defval: "" });
+  const map = {};
+  rows.forEach(r => {
+    const id = String(r["ID"] || r["id"] || "").trim();
+    if (!id) return;
+    const summary = String(r["Summary"] || r["summary"] || "").trim();
+    // Skip rows with no actual CV content — e.g. consultants flagged as having no CV on file
+    if (!summary) return;
+    map[id] = {
+      summary,
+      education:     String(r["Education"]                        || r["education"]       || "").trim(),
+      experience1:   String(r["Experience — Role 1 (Most Recent)"]|| r["experience1"]     || "").trim(),
+      experience2:   String(r["Experience — Role 2"]              || r["experience2"]     || "").trim(),
+      experience3:   String(r["Experience — Role 3"]              || r["experience3"]     || "").trim(),
+      achievements:  String(r["Key Achievements"]                 || r["achievements"]    || "").trim(),
+      certifications:String(r["Certifications"]                   || r["certifications"]  || "").trim(),
+      coreSkills:    String(r["Core Skills"]                      || r["coreSkills"]      || "").trim(),
+      languages:     String(r["Languages"]                        || r["languages"]       || "").trim(),
+      lastUpdated:   parseDateSerial(r["Last CV Update"] ?? r["lastUpdated"] ?? ""),
+    };
+  });
+  return map;
+}
+
+function parseConsultantRows(rows, cvMap = {}, weeklyMap = {}) {
   const required = ["name","band","jrs","availabilityDate","location","skills"];
   const missing = required.filter(k => !Object.keys(rows[0] || {}).includes(k));
   if (missing.length) throw new Error(`Missing required columns: ${missing.join(", ")}`);
@@ -2604,18 +2715,58 @@ function parseConsultantRows(rows) {
     travelWillingness: parseBool(r.travelWillingness),
     assignmentStatus: String(r.assignmentStatus || "Bench").trim(),
     utilizationPercentage: (() => {
+      // Fall back to the static column on Sheet1 (Weekly Hours sheet is handled via weeklyHoursData below)
       if (r.utilizationPercentage === "" || r.utilizationPercentage == null) return null;
       const pct = Number.parseFloat(String(r.utilizationPercentage).replace("%", "").trim());
       return Number.isFinite(pct) && pct >= 0 && pct <= 1000 ? pct : null;
     })(),
+    // Average weekly hours from the "Weekly Hours" sheet (billable + non-billable).
+    // When present, calcUtilization uses this as the authoritative allocated-hours figure.
+    weeklyHoursData: (() => {
+      const consultantId = r.id || `U${String(i+1).padStart(3,"0")}`;
+      const weekly = weeklyMap[consultantId];
+      if (!weekly || weekly.weekCount === 0) return null;
+      return {
+        avgBillable:    Math.round(weekly.avgBillable    * 10) / 10,
+        avgNonBillable: Math.round(weekly.avgNonBillable * 10) / 10,
+        avgTotal:       Math.round((weekly.avgBillable + weekly.avgNonBillable) * 10) / 10,
+        weekCount:      weekly.weekCount,
+      };
+    })(),
     benchStatus:      r.benchStatus !== "" ? parseBool(r.benchStatus) : (String(r.assignmentStatus||"").toLowerCase()==="bench"),
     weeklyCapacity:   r.weeklyCapacity !== "" ? (parseInt(r.weeklyCapacity) || 40) : 40,
-    // currentAllocations may be JSON string or empty — parse if present
+    // currentAllocations may be JSON, or a human-readable string like:
+    // "ProjectName @ Client (40h, ends 2026-08-25); Another Project @ Client (10h, ends 2026-12-31)"
     currentAllocations: (() => {
       if (!r.currentAllocations) return [];
-      try { const p = JSON.parse(r.currentAllocations); return Array.isArray(p) ? p : []; }
-      catch { return []; }
+      const raw = String(r.currentAllocations).trim();
+      // Try JSON first
+      try { const p = JSON.parse(raw); return Array.isArray(p) ? p : []; }
+      catch { /* fall through to plain-text parser */ }
+      // Plain-text parser: split on ";" then parse each segment
+      return raw.split(";").map(seg => {
+        seg = seg.trim();
+        if (!seg) return null;
+        // Extract hours: "(40h," or "(40h)"
+        const hrsMatch = seg.match(/\((\d+)\s*h/i);
+        const weeklyHours = hrsMatch ? parseInt(hrsMatch[1]) : 40;
+        // Extract end date: "ends YYYY-MM-DD"
+        const startMatch = seg.match(/starts\s+(\d{4}-\d{2}-\d{2})/i);
+        const endMatch   = seg.match(/ends\s+(\d{4}-\d{2}-\d{2})/i);
+        const startDate  = startMatch ? startMatch[1] : "";
+        const endDate    = endMatch   ? endMatch[1]   : "";
+        // Extract "ProjectName @ Client" (everything before the first "(")
+        const beforeParen = seg.split("(")[0].trim();
+        const atIdx = beforeParen.lastIndexOf(" @ ");
+        const projectName = atIdx >= 0 ? beforeParen.slice(0, atIdx).trim() : beforeParen;
+        const client      = atIdx >= 0 ? beforeParen.slice(atIdx + 3).trim() : "";
+        return { projectName, client, weeklyHours, startDate, endDate };
+      }).filter(Boolean);
     })(),
+    // CV profile — only attach if cvExists is true and the CVs sheet had content for this ID
+    cv: (r.cvExists !== "" ? parseBool(r.cvExists) : true)
+        ? (cvMap[r.id || `U${String(i+1).padStart(3,"0")}`] || null)
+        : null,
   })).filter(c => c.name);
 }
 
@@ -2682,6 +2833,11 @@ async function processUploadFile(file, type) {
     const rows = sheetToRows(wb);
     if (!rows.length) throw new Error("File appears to be empty");
 
+    // Extract CV data from a second "CVs" sheet if present (consultants upload only)
+    const cvMap      = type === "consultants" ? parseCVSheet(wb)          : {};
+    // Extract weekly hours history from a "Weekly Hours" sheet if present
+    const weeklyMap  = type === "consultants" ? parseWeeklyHoursSheet(wb) : {};
+
     const actualHeaders = Object.keys(rows[0] || {});
     const fieldDefs = type === "consultants" ? CONSULTANT_FIELDS : ROLE_FIELDS;
     const requiredKeys = fieldDefs.filter(f => f.required).map(f => f.key);
@@ -2693,10 +2849,12 @@ async function processUploadFile(file, type) {
       // Fast path: headers already match — parse directly
       let parsed;
       if (type === "consultants") {
-        parsed = parseConsultantRows(rows);
+        parsed = parseConsultantRows(rows, cvMap, weeklyMap);
         _pendingData.consultants = parsed;
+        const cvCount = parsed.filter(c => c.cv).length;
+        const wkCount = Object.keys(weeklyMap).length;
         statusEl.className = "file-status success";
-        statusEl.textContent = `✓ ${file.name} — ${parsed.length} consultant records loaded`;
+        statusEl.textContent = `✓ ${file.name} — ${parsed.length} consultant records loaded${cvCount ? ` · ${cvCount} CV profiles` : ""}${wkCount ? ` · ${wkCount} weekly history` : ""}`;
       } else {
         parsed = parseRoleRows(rows);
         _pendingData.roles = parsed;
@@ -2724,17 +2882,18 @@ async function processUploadFile(file, type) {
           return newRow;
         });
         const parsed = type === "consultants"
-          ? parseConsultantRows(remappedRows)
+          ? parseConsultantRows(remappedRows, cvMap, weeklyMap)
           : parseRoleRows(remappedRows);
         _pendingData[type] = parsed;
         statusEl.className = "file-status success";
-        statusEl.textContent = `✓ ${file.name} — ${parsed.length} ${type === "consultants" ? "consultant" : "role"} records loaded`;
+        const cvCountR = type === "consultants" ? parsed.filter(c => c.cv).length : 0;
+        statusEl.textContent = `✓ ${file.name} — ${parsed.length} ${type === "consultants" ? "consultant" : "role"} records loaded${cvCountR ? ` · ${cvCountR} CV profiles` : ""}`;
         updateApplyButton();
       } else {
         // Ambiguous headers still require review in the mapping agent.
         statusEl.className = "file-status info";
         statusEl.textContent = `⚙ ${file.name} — review the column mappings to continue`;
-        openMappingModal(type, rows, fieldDefs, mappings, actualHeaders);
+        openMappingModal(type, rows, fieldDefs, mappings, actualHeaders, cvMap, weeklyMap);
       }
     }
   } catch (err) {
@@ -2800,14 +2959,20 @@ function applyUploadedData() {
   // Refresh entire UI
   initStats();
   renderRoleTable();
-  showDemand();
   closeUploadModal();
   updateDataSourceBadge();
-  // Re-seed utilization sidebar badge with new data
-  const _utilMap = buildUtilizationMap();
-  const _over = _utilMap.filter(u => u.util.status === "over").length;
-  const _bench = _utilMap.filter(u => u.util.status === "bench").length;
-  document.getElementById("sidebar-util-count").textContent = _over + _bench;
+
+  // Reset utilization filters so stat-card clicks always start from a clean state
+  const ufStatus = document.getElementById("uf-status");
+  if (ufStatus) ufStatus.value = "";
+  const ufName = document.getElementById("uf-name");
+  if (ufName) ufName.value = "";
+
+  // Re-render utilization dashboard so stat card counts are up to date
+  // (keeps the view hidden; just refreshes the data and sidebar badge)
+  renderUtilizationDashboard();
+
+  showDemand();
 
   // Show banner
   const banner = document.createElement("div");
@@ -2906,52 +3071,81 @@ const UTIL_PART_LO =   1; // 1–69% = underutilized / partial
 
 /**
  * Compute utilization for a single consultant.
- * Returns { allocatedHours, capacityHours, pct, status, freeHours, allocations }
+ * Returns { allocatedHours, capacityHours, pct, status, freeHours, allocations, inferred, weeklyHoursData }
  * status: 'over' | 'full' | 'partial' | 'bench'
+ *
+ * Priority order for allocated hours:
+ *  1. Weekly Hours sheet average (billable + non-billable) — most authoritative
+ *  2. currentAllocations sum of weeklyHours
+ *  3. utilizationPercentage static column
+ *  4. Heuristic from assignmentStatus
  */
 function calcUtilization(consultant) {
   const capacity = consultant.weeklyCapacity || 40;
   const allocs   = consultant.currentAllocations || [];
+  const whd      = consultant.weeklyHoursData || null; // from Weekly Hours sheet
 
-  // If no detailed allocations are provided, use an uploaded utilization percentage
-  // before falling back to assignmentStatus.
-  if (allocs.length === 0) {
-    const s = (consultant.assignmentStatus || "").toLowerCase();
-    let pct = Number.isFinite(consultant.utilizationPercentage)
-      ? consultant.utilizationPercentage
-      : 0;
-    if (!Number.isFinite(consultant.utilizationPercentage)) {
-      if (s === "active") pct = 100;
-      else if (s === "project ending") pct = 50;
-    }
-    let status;
-    if (pct === 0)             status = "bench";
-    else if (pct > UTIL_OVER)  status = "over";
-    else if (pct >= UTIL_FULL_LO) status = "full";
-    else                       status = "partial";
-    const inferredHours = Math.round((pct / 100) * capacity);
+  // --- Priority 0: Bench flag always wins — historical hours are past activity, not current state ---
+  const s = (consultant.assignmentStatus || "").toLowerCase();
+  if (consultant.benchStatus === true || s === "bench") {
     return {
-      allocatedHours: inferredHours,
-      capacityHours:  capacity,
-      pct,
-      status,
-      freeHours:  Math.max(0, capacity - inferredHours),
-      allocations: [],
-      inferred:    true,  // flag so the UI can show an explanatory note
+      allocatedHours: 0, capacityHours: capacity, pct: 0,
+      status: "bench", freeHours: capacity, allocations: [], inferred: false, weeklyHoursData: null,
     };
   }
 
-  const allocated = allocs.reduce((sum, a) => sum + (a.weeklyHours || 0), 0);
-  const pct    = capacity > 0 ? Math.round((allocated / capacity) * 100) : 0;
-  const free   = Math.max(0, capacity - allocated);
+  // --- Priority 1: Weekly Hours sheet average (billable + non-billable) ---
+  if (whd && whd.avgTotal >= 0) {
+    const allocated = whd.avgTotal;
+    const pct = capacity > 0 ? Math.round((allocated / capacity) * 100) : 0;
+    const free = Math.max(0, capacity - allocated);
+    let status;
+    if (allocated === 0)          status = "bench";
+    else if (pct > UTIL_OVER)     status = "over";
+    else if (pct >= UTIL_FULL_LO) status = "full";
+    else                          status = "partial";
+    return {
+      allocatedHours:  Math.round(allocated * 10) / 10,
+      capacityHours:   capacity,
+      pct,
+      status,
+      freeHours:       Math.round(free * 10) / 10,
+      allocations:     allocs,
+      inferred:        false,
+      weeklyHoursData: whd, // carry through for UI breakdown display
+    };
+  }
 
+  // --- Priority 2: currentAllocations sum ---
+  if (allocs.length > 0) {
+    const allocated = allocs.reduce((sum, a) => sum + (a.weeklyHours || 0), 0);
+    const pct    = capacity > 0 ? Math.round((allocated / capacity) * 100) : 0;
+    const free   = Math.max(0, capacity - allocated);
+    let status;
+    if (allocated === 0)          status = "bench";
+    else if (pct > UTIL_OVER)     status = "over";
+    else if (pct >= UTIL_FULL_LO) status = "full";
+    else                          status = "partial";
+    return { allocatedHours: allocated, capacityHours: capacity, pct, status, freeHours: free, allocations: allocs, inferred: false, weeklyHoursData: null };
+  }
+
+  // --- Priority 3 & 4: no allocation detail — fall back to percentage / status heuristic ---
+  let pct = Number.isFinite(consultant.utilizationPercentage)
+    ? consultant.utilizationPercentage : 0;
+  if (!Number.isFinite(consultant.utilizationPercentage)) {
+    if (s === "active") pct = 100;
+    else if (s === "project ending") pct = 50;
+  }
   let status;
-  if (allocated === 0)          status = "bench";
+  if (pct === 0)                status = "bench";
   else if (pct > UTIL_OVER)     status = "over";
   else if (pct >= UTIL_FULL_LO) status = "full";
   else                          status = "partial";
-
-  return { allocatedHours: allocated, capacityHours: capacity, pct, status, freeHours: free, allocations: allocs, inferred: false };
+  const inferredHours = Math.round((pct / 100) * capacity);
+  return {
+    allocatedHours: inferredHours, capacityHours: capacity, pct, status,
+    freeHours: Math.max(0, capacity - inferredHours), allocations: [], inferred: true, weeklyHoursData: null,
+  };
 }
 
 // Build utilization records for every consultant
@@ -2975,20 +3169,61 @@ function buildRebalancingActions(utilMap) {
 
   utilMap.forEach(({ consultant: c, util }) => {
     if (util.status === "over") {
-      const excessHours = util.allocatedHours - util.capacityHours;
-      // Find the allocation ending soonest to suggest as rolloff candidate
-      const soonestEnd = util.allocations
-        .filter(a => a.endDate)
-        .sort((a, b) => new Date(a.endDate) - new Date(b.endDate))[0];
+      const excessHours = Math.round((util.allocatedHours - util.capacityHours) * 10) / 10;
+      // Find the smallest allocation whose hours cover the excess (best surgical rolloff).
+      // Sort by weeklyHours ascending so we prefer the lightest engagement that fixes the problem.
+      const sortedByHours = util.allocations
+        .filter(a => a.weeklyHours)
+        .sort((a, b) => a.weeklyHours - b.weeklyHours);
+      const rolloffCandidate =
+        sortedByHours.find(a => a.weeklyHours >= excessHours) || sortedByHours[sortedByHours.length - 1];
+
+      // Build a pseudo-role from the rolloff project so we can score other consultants against it.
+      // Use the overallocated consultant's own profile as the template — same JRS, band, skills, industry.
+      const pseudoRole = rolloffCandidate ? {
+        jrs:                  c.jrs,
+        bandMin:              Math.max(1, c.band - 1),
+        bandMax:              c.band + 1,
+        requiredSkills:       c.skills.slice(0, 5),
+        niceToHaveSkills:     c.skills.slice(5),
+        certifications:       [],
+        requiredIndustry:     c.industries[0] || "",
+        niceToHaveIndustries: c.industries.slice(1),
+        startDate:            rolloffCandidate.startDate || today,
+        location:             c.location,
+        travelRequired:       false,
+        weeklyHours:          rolloffCandidate.weeklyHours,
+      } : null;
+
+      // Score every other consultant who has enough free capacity to absorb the rolloff hours.
+      const suggestedConsultants = pseudoRole
+        ? utilMap
+            .filter(({ consultant: other, util: ou }) =>
+              other.id !== c.id &&
+              ou.status !== "over" &&
+              ou.freeHours >= (rolloffCandidate.weeklyHours * 0.5) // at least half the hours free
+            )
+            .map(({ consultant: other }) => ({
+              consultant: other,
+              score: scoreConsultant(other, pseudoRole).overallScore,
+              freeHours: utilMap.find(u => u.consultant.id === other.id)?.util.freeHours ?? 0,
+            }))
+            .filter(x => x.score >= 40)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 2)
+        : [];
+
       actions.push({
         priority: "high",
         type: "overallocated",
         consultant: c,
         util,
         detail: `${c.name} is at ${util.pct}% utilization (${util.allocatedHours}h allocated vs ${util.capacityHours}h capacity). ${excessHours}h over budget.`,
-        suggestion: soonestEnd
-          ? `Consider rolling off "${soonestEnd.projectName}" (ending ${soonestEnd.endDate}) to bring within capacity.`
+        suggestion: rolloffCandidate
+          ? `Consider rolling off "${rolloffCandidate.projectName}" (${rolloffCandidate.weeklyHours}h/wk) to bring within capacity.`
           : "Review allocations and remove or reduce one engagement.",
+        rolloffCandidate,
+        suggestedConsultants,
       });
     }
 
@@ -3019,24 +3254,25 @@ function buildRebalancingActions(utilMap) {
         .filter(x => x.score >= 50)
         .sort((a, b) => b.score - a.score)
         .slice(0, 2);
-      if (matchingRoles.length > 0) {
-        actions.push({
-          priority: "medium",
-          type: "underutilized",
-          consultant: c,
-          util,
-          detail: `${c.name} is at ${util.pct}% utilization with ${freeHrs}h/week free capacity.`,
-          suggestion: `Could take on: ${matchingRoles.map(m => `"${m.role.roleTitle}" (${m.role.client}, score ${m.score})`).join(" · ")}`,
-          matchingRoles,
-        });
-      }
+      actions.push({
+        priority: "medium",
+        type: "underutilized",
+        consultant: c,
+        util,
+        detail: `${c.name} is at ${util.pct}% utilization with ${freeHrs}h/week free capacity.`,
+        suggestion: matchingRoles.length > 0
+          ? `Could take on: ${matchingRoles.map(m => `"${m.role.roleTitle}" (${m.role.client}, score ${m.score})`).join(" · ")}`
+          : "No open role matches currently — consider internal projects or upskilling initiatives.",
+        matchingRoles,
+      });
     }
   });
 
-  // Sort: high priority first, then by utilization pct descending within each priority
+  // Sort: overallocated first, then underutilized, then bench, then by utilization pct
   return actions.sort((a, b) => {
-    const pOrder = { high: 0, medium: 1, low: 2 };
-    if (pOrder[a.priority] !== pOrder[b.priority]) return pOrder[a.priority] - pOrder[b.priority];
+    const tOrder = { overallocated: 0, underutilized: 1, bench: 2 };
+    const ta = tOrder[a.type] ?? 3, tb = tOrder[b.type] ?? 3;
+    if (ta !== tb) return ta - tb;
     return b.util.pct - a.util.pct;
   });
 }
@@ -3151,6 +3387,19 @@ function renderUtilizationDashboard() {
               <div style="color:var(--muted);">${al.startDate} → ${al.endDate || "ongoing"}</div>
               <span class="alloc-chip ${al.weeklyHours + (a.util.allocatedHours - al.weeklyHours) > a.util.capacityHours && a.util.status === "over" ? "alloc-chip-over" : ""}">${al.weeklyHours}h/wk</span>
             </div>`).join("")}` : ""}
+          ${a.suggestedConsultants?.length > 0 ? `
+          <div style="margin-top:10px;">
+            <div style="font-size:12px;font-weight:700;margin-bottom:6px;">👤 Suggested Replacement</div>
+            ${a.suggestedConsultants.map(s => `
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">
+                <div style="flex:1;">
+                  <strong>${s.consultant.name}</strong>
+                  <span style="color:var(--muted);margin-left:6px;">${s.consultant.jrs} · Band ${s.consultant.band}</span>
+                  <span style="color:var(--green);margin-left:6px;">${s.freeHours}h/wk free</span>
+                </div>
+                <span class="badge ${scoreBadgeClass(s.score)}" style="font-size:11px;">Score ${s.score}</span>
+              </div>`).join("")}
+          </div>` : ""}
           ${a.topRole ? `
           <div style="margin-top:10px;">
             <button class="btn-back" style="margin-bottom:0;font-size:12px;" onclick="openRole('${a.topRole.role.id}');showDemand();setTimeout(()=>openRole('${a.topRole.role.id}'),50)">
@@ -3189,7 +3438,15 @@ function renderUtilizationDashboard() {
     const barColor = utilBarColor(util.status);
     const barW     = Math.min(100, util.pct);
     const allocNames = util.allocations.length > 0
-      ? util.allocations.map(a => `<span class="alloc-chip">${a.projectName}</span>`).join("")
+      ? util.allocations.map(a => {
+          const start = a.startDate || "";
+          const end   = a.endDate   || "";
+          const dates = start && end ? `${start} → ${end}` : (end || start);
+          return `<div style="margin:2px 0;">
+            <span class="alloc-chip">${a.projectName}</span>
+            ${dates ? `<div style="font-size:10px;color:var(--muted);margin-left:4px;">${dates}</div>` : ""}
+          </div>`;
+        }).join("")
       : `<span style="color:var(--muted);font-size:12px;">—</span>`;
     const expandId = `util-expand-${c.id}`;
 
@@ -3221,7 +3478,7 @@ function renderUtilizationDashboard() {
           </div>
           <span class="util-pct" style="color:${barColor};">${util.pct}%</span>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:3px;">${util.allocatedHours}h / ${util.capacityHours}h per week${util.inferred ? ' <span title="Estimated from Assignment Status — upload currentAllocations for precise data" style="color:var(--yellow);cursor:help;">~ estimated</span>' : ''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">${util.allocatedHours}h / ${util.capacityHours}h per week${util.weeklyHoursData ? ` <span title="Avg over ${util.weeklyHoursData.weekCount} week(s) from Weekly Hours sheet: ${util.weeklyHoursData.avgBillable}h billable + ${util.weeklyHoursData.avgNonBillable}h non-billable" style="color:var(--accent);cursor:help;">~ weekly avg</span>` : util.inferred ? ' <span title="Estimated from Assignment Status — upload currentAllocations for precise data" style="color:var(--yellow);cursor:help;">~ estimated</span>' : ''}</div>
       </td>
       <td style="font-weight:600;color:${util.freeHours > 0 ? "var(--green)" : "var(--muted)"};">${util.freeHours}h/wk</td>
       <td>${utilStatusBadge(util.status, util.pct)}</td>
@@ -3229,29 +3486,68 @@ function renderUtilizationDashboard() {
     <tr id="${expandId}" style="display:none;">
       <td colspan="7" style="background:var(--bg);padding:0;">
         <div style="padding:12px 16px;">
-          ${util.allocations.length === 0
-            ? `<div style="font-size:12px;color:var(--muted);font-style:italic;">No current allocations on record.</div>`
-            : `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+          ${util.weeklyHoursData
+            ? `<table style="width:100%;border-collapse:collapse;font-size:12px;">
                 <tr style="color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;">
-                  <th style="padding:4px 8px;text-align:left;">Project</th>
-                  <th style="padding:4px 8px;text-align:left;">Client</th>
-                  <th style="padding:4px 8px;text-align:left;">Start</th>
-                  <th style="padding:4px 8px;text-align:left;">End</th>
-                  <th style="padding:4px 8px;text-align:right;">Hrs/Wk</th>
+                  <th style="padding:4px 8px;text-align:left;">Source</th>
+                  <th style="padding:4px 8px;text-align:right;">Avg Hrs/Wk</th>
                 </tr>
-                ${util.allocations.map(a => `
-                  <tr style="border-top:1px solid var(--border);">
-                    <td style="padding:5px 8px;font-weight:600;">${a.projectName}</td>
-                    <td style="padding:5px 8px;color:var(--muted);">${a.client}</td>
-                    <td style="padding:5px 8px;">${a.startDate}</td>
-                    <td style="padding:5px 8px;">${a.endDate || "Ongoing"}</td>
-                    <td style="padding:5px 8px;text-align:right;font-weight:600;">${a.weeklyHours}</td>
-                  </tr>`).join("")}
+                <tr style="border-top:1px solid var(--border);">
+                  <td style="padding:5px 8px;">Billable Hours</td>
+                  <td style="padding:5px 8px;text-align:right;font-weight:600;">${util.weeklyHoursData.avgBillable}h</td>
+                </tr>
+                <tr style="border-top:1px solid var(--border);">
+                  <td style="padding:5px 8px;">Non-Billable Hours</td>
+                  <td style="padding:5px 8px;text-align:right;font-weight:600;">${util.weeklyHoursData.avgNonBillable}h</td>
+                </tr>
                 <tr style="border-top:2px solid var(--border);font-weight:700;">
-                  <td colspan="4" style="padding:5px 8px;">Total</td>
-                  <td style="padding:5px 8px;text-align:right;">${util.allocatedHours}h</td>
+                  <td style="padding:5px 8px;">Total (avg over ${util.weeklyHoursData.weekCount} week${util.weeklyHoursData.weekCount !== 1 ? "s" : ""})</td>
+                  <td style="padding:5px 8px;text-align:right;">${util.weeklyHoursData.avgTotal}h</td>
                 </tr>
-              </table>`}
+              </table>
+              ${util.allocations.length > 0 ? `<div style="margin-top:10px;">
+                <div style="font-size:11px;font-weight:700;margin-bottom:4px;color:var(--muted);text-transform:uppercase;">Current Allocations</div>
+                <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                  <tr style="color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;">
+                    <th style="padding:4px 8px;text-align:left;">Project</th>
+                    <th style="padding:4px 8px;text-align:left;">Client</th>
+                    <th style="padding:4px 8px;text-align:left;">Start</th>
+                    <th style="padding:4px 8px;text-align:left;">End</th>
+                    <th style="padding:4px 8px;text-align:right;">Hrs/Wk</th>
+                  </tr>
+                  ${util.allocations.map(a => `
+                    <tr style="border-top:1px solid var(--border);">
+                      <td style="padding:5px 8px;font-weight:600;">${a.projectName}</td>
+                      <td style="padding:5px 8px;color:var(--muted);">${a.client}</td>
+                      <td style="padding:5px 8px;">${a.startDate}</td>
+                      <td style="padding:5px 8px;">${a.endDate || "Ongoing"}</td>
+                      <td style="padding:5px 8px;text-align:right;font-weight:600;">${a.weeklyHours}</td>
+                    </tr>`).join("")}
+                </table>
+              </div>` : ""}`
+            : util.allocations.length === 0
+              ? `<div style="font-size:12px;color:var(--muted);font-style:italic;">No current allocations on record.</div>`
+              : `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+                  <tr style="color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;">
+                    <th style="padding:4px 8px;text-align:left;">Project</th>
+                    <th style="padding:4px 8px;text-align:left;">Client</th>
+                    <th style="padding:4px 8px;text-align:left;">Start</th>
+                    <th style="padding:4px 8px;text-align:left;">End</th>
+                    <th style="padding:4px 8px;text-align:right;">Hrs/Wk</th>
+                  </tr>
+                  ${util.allocations.map(a => `
+                    <tr style="border-top:1px solid var(--border);">
+                      <td style="padding:5px 8px;font-weight:600;">${a.projectName}</td>
+                      <td style="padding:5px 8px;color:var(--muted);">${a.client}</td>
+                      <td style="padding:5px 8px;">${a.startDate}</td>
+                      <td style="padding:5px 8px;">${a.endDate || "Ongoing"}</td>
+                      <td style="padding:5px 8px;text-align:right;font-weight:600;">${a.weeklyHours}</td>
+                    </tr>`).join("")}
+                  <tr style="border-top:2px solid var(--border);font-weight:700;">
+                    <td colspan="4" style="padding:5px 8px;">Total</td>
+                    <td style="padding:5px 8px;text-align:right;">${util.allocatedHours}h</td>
+                  </tr>
+                </table>`}
           ${roleMatches.length > 0 ? `
           <div style="margin-top:10px;">
             <div style="font-size:12px;font-weight:700;margin-bottom:6px;">Open Role Candidates (${roleMatches.length})</div>
@@ -3284,10 +3580,23 @@ function toggleRebal(idx) {
 }
 
 
+// ─── Utilization quick-filter helper ─────────────────────────────────────────
+
+// Navigate to Utilization Dashboard and pre-set the Status filter dropdown
+function filterUtilizationTo(status) {
+  showUtilization();
+  const sel = document.getElementById("uf-status");
+  if (sel) {
+    sel.value = status;
+    renderUtilizationDashboard();
+  }
+}
+
 // ─── Expose globals & init ────────────────────────────────────────────────────
 
 window.openRole = openRole;
 window.toggleCandidate = toggleCandidate;
+window.toggleCVPanel   = toggleCVPanel;
 window.showDemand = showDemand;
 window.showUtilization = showUtilization;
 window.renderUtilizationDashboard = renderUtilizationDashboard;
@@ -3318,13 +3627,18 @@ window.closeMappingModal = closeMappingModal;
 window.confirmMapping = confirmMapping;
 window.onMappingSelChange = onMappingSelChange;
 window.viewConsultantUtilization = viewConsultantUtilization;
+window.filterUtilizationTo = filterUtilizationTo;
 
 // Wire upload controls directly so project uploads do not depend solely on inline handlers.
 document.getElementById("tab-btn-roles").addEventListener("click", () => switchUploadTab("roles"));
 document.getElementById("file-roles").addEventListener("change", event => handleFileSelect(event, "roles"));
 
-// Load persisted data before first render (replaces sample data if saved data exists)
-const _hadSavedData = loadFromStorage();
+// Load persisted data before first render (replaces sample data if saved data exists).
+// If nothing is in localStorage, fall back to the built-in sample data so the app
+// renders a meaningful state on first install / after a reset.
+loadFromStorage();
+if (!consultants.length) SAMPLE_CONSULTANTS.forEach(c => consultants.push(c));
+if (!roles.length)       SAMPLE_ROLES.forEach(r => roles.push(r));
 
 initStats();
 renderRoleTable();
