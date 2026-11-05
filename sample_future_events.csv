@@ -1,0 +1,7 @@
+id,type,date,endDate,label,consultantId,hoursDelta
+E-001,holiday,2026-09-07,,Labor Day,,0
+E-002,holiday,2026-10-12,,Company Recharge Day,,0
+E-003,project_end,2026-09-20,,Core Banking API program ends (Meridian),,0
+E-004,contract_transition,2026-09-21,,NovaTech SOW signed — Maria Santos starts,C002,40
+E-005,contract_transition,2026-10-29,,Apex Logistics extension — Carlos Rivera +10h,C008,10
+E-006,holiday,2026-11-18,2026-11-19,Thanksgiving break (partial),,0

@@ -1,0 +1,9 @@
+id,roleTitle,client,jrs,skills,niceToHaveSkills,bandMin,bandMax,startDate,endDate,hoursPerWeek,probability,location,travelRequired,notes
+F-001,Cloud Landing Zone Architect,Harbor Mutual (forecast),Cloud Solution Architect,"AWS,Terraform,Solution Architecture","Security,Kubernetes",7,9,2026-08-30,2027-02-26,40,80,"Dallas, TX",true,Verbal award; SOW in legal review
+F-002,Data Lakehouse Engineer,Summit Health (forecast),Data Engineer,"Python,Spark,Databricks,SQL","Azure,dbt",6,8,2026-09-10,2027-03-08,40,70,"Chicago, IL",false,Follow-on to existing engagement
+F-003,GenAI Platform Engineer,Orion Retail (forecast),AI/ML Specialist,"Python,LLMs,NLP,MLOps","AWS,PyTorch",7,9,2026-09-19,2027-03-18,40,60,"San Jose, CA",true,Pipeline stage: proposal submitted
+F-004,Full-Stack Modernization Developer,Keystone Insurance (forecast),Application Developer,"Java,Spring Boot,REST APIs,PostgreSQL","Docker,Kubernetes",6,7,2026-09-24,2027-03-23,40,75,"New York, NY",false,
+F-005,Platform Security Architect,Federal Civilian Agency (forecast),Cloud Solution Architect,"GCP,Security,Networking,Solution Architecture","Kubernetes,Terraform",8,9,2026-10-04,2027-04-17,40,55,"Washington, DC",true,Recompete; award expected this quarter
+F-006,Analytics Engineer (part-time),Atlas Logistics (forecast),Data Engineer,"SQL,Power BI,Python",Azure,6,8,2026-09-03,2026-12-18,20,90,"Boston, MA",false,Signed change order
+F-007,React Experience Developer,Beacon Education (forecast),Application Developer,"React,TypeScript,Node.js,REST APIs",PostgreSQL,5,7,2026-10-19,2027-04-17,40,65,"Atlanta, GA",false,
+F-008,Quantum-Safe Crypto Specialist,Pinnacle Bank (forecast),Security Architect,"Cryptography,PKI,Quantum-Safe,Security",,8,9,2026-11-03,2027-05-02,40,40,"Charlotte, NC",true,Early-stage; demonstrates a skill gap with no roster match

@@ -90,6 +90,44 @@ Utilization is calculated in this order:
 
 `weeklyCapacity` defaults to 40 hours when omitted. When a utilization figure is estimated from the fallback heuristic rather than real allocation data, the UI labels it **~ estimated** so reviewers can identify it at a glance.
 
+### KPI Framework (Utilization tab)
+
+A two-layer, rule-based framework (no ML/LLM) rendered inside the Utilization tab, between the Rebalancing Recommendations and the Consultant Load table. It reads the same consultants and open roles as the rest of the app and calls the existing `calcUtilization` and `scoreConsultant` functions without changing them.
+
+**Layer 1 – Input KPIs & Triggers**
+
+| Input | Where it is configured |
+|---|---|
+| Consultant utilization threshold (default 70%) and per-consultant overrides | *Thresholds & targets* |
+| Practice chargeability target (default 75%), horizon (default 90 days), minimum match score, minimum skill coverage, unsigned-role probability, as-of date | *Thresholds & targets* |
+| 90-day demand forecast (CSV/XLSX upload, manual rows, template download) | *Demand forecast* |
+| Known future events: holidays, project ends, contract transitions (CSV/XLSX upload, manual rows, 90-day timeline) | *Future events calendar* |
+| Current utilization and allocations | Existing roster data |
+
+A consultant is flagged as a **bench risk** when utilization is below their threshold today (*current*) or is projected to fall below it on an allocation end date or contract-transition date inside the horizon (*projected*). The flag stores the consultant's skill profile (skills, JRS, band, certifications, industries, location, travel, free-from date). Each flag explains itself: why it was raised, a dated utilization timeline, and every demand match with its pass/fail reason.
+
+**Layer 2 – Optimizer KPIs & Metrics**
+
+| KPI | Definition |
+|---|---|
+| Chargeability | Σ billable hours ÷ Σ capacity hours, against the target. Billable uses the Weekly Hours sheet when present, otherwise non-"Internal" allocations, otherwise allocated hours (labelled estimated). Holiday weekdays scale that week's projection. |
+| Bench risks | Count (current / projected / high severity) with change versus the previous snapshot. |
+| Skill-match success | Bench risks with at least one qualifying demand match ÷ all bench risks. A match qualifies when score ≥ minimum, required-skill coverage ≥ minimum, and free hours ≥ ½ of the hours needed. |
+| Recommended actions | Pending / accepted / completed / dismissed, with a completion rate. Status is persisted. |
+| Forecast accuracy | Each daily snapshot stores a 30-day chargeability and bench-risk prediction. Once a later snapshot lands within 3 days of the target date: accuracy = 100 − \|predicted − actual\|, and risk-list agreement = overlap ÷ union. |
+
+Recommendation rules, in order: **allocate** to the best qualifying demand (each demand seat goes to one consultant); otherwise **rebalance** hours from an over-allocated peer whose profile scores at or above the minimum; otherwise **develop / redeploy**, listing the most-requested skills the consultant lacks. A *How these numbers are calculated* panel in the UI documents every rule.
+
+**Persistence and files**
+
+- `localStorage` keys: `ruo_kpi_config`, `ruo_kpi_forecast`, `ruo_kpi_events`, `ruo_kpi_history`, `ruo_kpi_rec_states`.
+- *Export settings & history (JSON)* and *Import JSON* round-trip the full KPI state (imports are re-validated). *Export KPIs (Excel)* writes KPI Summary, Bench Risks, Recommendations and KPI History sheets.
+- Invalid rows in uploads are skipped and reported by line number; invalid thresholds are rejected with a message.
+- First run loads sample inputs pinned to an as-of date of 2026-08-20 (flagged "Sample inputs" in the UI), including seven weeks of demo history so the trend charts and forecast accuracy have data. Choose **Use today's date** under *Thresholds & targets* for live use, and replace the sample forecast/events.
+- Sample upload files: `sample_demand_forecast.csv`, `sample_future_events.csv`.
+
+The framework loads as ES modules, so the app must be served over HTTP (for example `python -m http.server 8080`). If the modules cannot load, the rest of the Utilization tab continues to work.
+
 ### Rebalancing Recommendations
 
 The utilization engine generates actions for:
@@ -277,15 +315,27 @@ Both files use the exact internal field keys as column headers, so they upload w
 ├── sample_consultants.xlsx       # Sample consultant upload file (with CVs sheet)
 ├── sample_project_demand.csv     # Sample project demand upload file
 ├── src/
+│   ├── components/
+│   │   ├── kpiPanel.js           # KPI Framework UI (Layer 1 inputs, Layer 2 dashboard)
+│   │   ├── kpiCharts.js          # Dependency-free SVG chart builders
+│   │   └── kpi.css               # Styles, all prefixed .kpi-
 │   ├── data/
 │   │   ├── consultants.js        # Reference sample consultant data
-│   │   └── roles.js              # Reference sample role data
+│   │   ├── roles.js              # Reference sample role data
+│   │   ├── kpiSamples.js         # Sample forecast, events and demo history
+│   │   └── kpiStore.js           # KPI persistence (localStorage, JSON bundle)
 │   └── engine/
-│       └── scorer.js             # Reference modular scoring engine
+│       ├── scorer.js             # Reference modular scoring engine
+│       └── kpi.js                # Deterministic KPI engine (pure functions, no DOM)
+├── tests/
+│   ├── kpi.test.mjs              # KPI engine and store tests (node --test tests/kpi.test.mjs)
+│   └── generate-sample-csvs.mjs  # Regenerates the sample forecast/events CSVs
+├── sample_demand_forecast.csv    # Sample 90-day demand forecast
+├── sample_future_events.csv      # Sample future events
 └── test.py                       # Placeholder test script (currently empty)
 ```
 
-The running application is implemented in `index.html`. Files under `src/` provide modular reference data and scoring code but are not imported by the page.
+The core app (scoring, utilization, rebalancing) is implemented in `index.html`. The KPI Framework under `src/` is imported by the page at runtime; the other `src/data` and `src/engine/scorer.js` files remain reference copies. The KPI engine receives `calcUtilization` and `scoreConsultant` by injection, so it is unit-tested with stubs and never depends on the browser.
 
 ## Technology and Storage
 

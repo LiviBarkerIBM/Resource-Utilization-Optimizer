@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resource Utilization Optimization Tool</title>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="src/components/kpi.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -899,7 +900,7 @@
     Export to Excel
   </button>
   <span id="data-source-badge" class="topnav-badge" style="margin-left:8px;">Sample Data</span>
-  <span class="topnav-badge" style="margin-left:4px;">DRAFT v0.1</span>
+  <span class="topnav-badge" style="margin-left:4px;">DRAFT v0.2</span>
 </nav>
 
 <!-- ═══ EMAIL NOTIFICATION MODAL ═══ -->
@@ -1441,6 +1442,9 @@
         </div>
         <div id="rebal-list"></div>
       </div>
+
+      <!-- KPI Framework (Layer 1 inputs & triggers + Layer 2 optimizer KPIs) — rendered by src/components/kpiPanel.js -->
+      <div id="kpi-framework-root"></div>
 
       <!-- Consultant roster with utilization -->
       <div class="card">
@@ -2019,6 +2023,34 @@ function showUtilization() {
   document.getElementById("nav-demand").classList.remove("active");
   document.getElementById("nav-utilization").classList.add("active");
   renderUtilizationDashboard();
+  loadKpiFramework();
+}
+
+// ─── KPI Framework (loaded lazily as separate ES modules; see src/engine/kpi.js) ──
+// The KPI layer only reads consultants/roles and calls calcUtilization / scoreConsultant;
+// it never changes them. If the modules cannot load (e.g. opened via file://) the rest of
+// the Utilization tab keeps working and a short notice is shown instead.
+let _kpiPanel = null;
+async function loadKpiFramework() {
+  const root = document.getElementById("kpi-framework-root");
+  if (!root) return;
+  try {
+    if (!_kpiPanel) {
+      const mod = await import("./src/components/kpiPanel.js");
+      _kpiPanel = mod.mountKpiPanel(root, {
+        getConsultants: () => consultants,
+        getRoles: () => roles,
+        calcUtilization,
+        scoreConsultant,
+        viewRole: id => { showDemand(); openRole(id); },
+        XLSX: window.XLSX,
+      });
+    }
+    _kpiPanel.render();
+  } catch (e) {
+    console.error("KPI framework failed to load", e);
+    root.innerHTML = `<div class="card" style="padding:14px 16px;margin-bottom:24px;font-size:12px;color:var(--muted);">The KPI Framework needs the app to be served over HTTP (for example <code>python -m http.server 8080</code>) and could not be loaded. All other Utilization features are unaffected.</div>`;
+  }
 }
 
 // Navigate to Utilization Dashboard and pre-filter by a specific consultant's name
